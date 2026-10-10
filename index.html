@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodePulse AI — Intelligent Code Reviewer</title>
+  <meta name="description" content="Lightning-fast, highly accurate AI Code Reviewer. Detect vulnerabilities, logic bugs, performance leaks, and generate instant automated fixes.">
+
+  <!-- Google Fonts: Geist & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "background": "#0a0e16",
+            "surface": "#0f131c",
+            "surface-container-low": "#141822",
+            "surface-container": "#1b202c",
+            "surface-container-high": "#242a38",
+            "surface-container-highest": "#2e3546",
+            "border-color": "#2b3242",
+            "border-subtle": "#1f2533",
+            "on-surface": "#f0f3fa",
+            "on-surface-variant": "#9aa5be",
+            "outline": "#626d84",
+            "primary": "#a78bfa",
+            "primary-container": "#7c3aed",
+            "secondary": "#34d399",
+            "warning": "#fbbf24",
+            "danger": "#f87171",
+            "info": "#38bdf8"
+          },
+          fontFamily: {
+            sans: ["Geist", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-background text-on-surface font-sans antialiased flex flex-col min-h-screen selection:bg-primary/30 selection:text-white">
+
+  <!-- Top Global Header -->
+  <header class="h-16 px-4 md:px-6 bg-surface-container-low/95 border-b border-border-color sticky top-0 z-40 backdrop-blur-md flex items-center justify-between gap-4">
+    <!-- Brand & Status -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shadow-sm shadow-primary/20">
+        <span class="material-symbols-outlined text-[22px]">code_blocks</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-base tracking-tight text-white">CodePulse AI</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-container-high text-primary border border-primary/20">v2.5</span>
+        </div>
+        <p class="text-[11px] text-on-surface-variant hidden sm:block">AI-Powered Senior Code Review & Security Diagnostics</p>
+      </div>
+    </div>
+
+    <!-- Active Engine Status Pill -->
+    <div id="engine-status-badge" class="hidden md:flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/30">
+      <span class="w-2 h-2 rounded-full bg-primary mr-1.5"></span> Heuristic Engine (Offline / Instant)
+    </div>
+
+    <!-- Header Actions Toolbar -->
+    <div class="flex items-center gap-2">
+      <!-- Preloaded Samples -->
+      <div class="relative hidden lg:block">
+        <select id="sample-selector" class="h-9 pl-3 pr-8 text-xs rounded-lg bg-surface-container border border-border-color text-on-surface focus:outline-none focus:border-primary appearance-none cursor-pointer">
+          <option value="" disabled selected>✨ Load Sample Scenario...</option>
+          <option value="typescript_auth">TypeScript: Auth Vulnerability</option>
+          <option value="python_security">Python: SQL Injection (CWE-89)</option>
+          <option value="react_performance">React: Re-render Loop & Leak</option>
+          <option value="go_concurrency">Go: Goroutine Leak & Race</option>
+          <option value="java_backend">Java: NullPointer & Stream Leak</option>
+        </select>
+        <span class="material-symbols-outlined text-[16px] text-outline absolute right-2.5 top-2.5 pointer-events-none">expand_more</span>
+      </div>
+
+      <!-- Upload File -->
+      <button id="btn-upload-file" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-border-color text-xs font-medium flex items-center gap-1.5 transition-colors" title="Upload Code File">
+        <span class="material-symbols-outlined text-[16px]">upload_file</span>
+        <span class="hidden sm:inline">Upload</span>
+      </button>
+      <input type="file" id="file-upload-input" class="hidden" accept=".js,.ts,.jsx,.tsx,.py,.go,.rs,.java,.cpp,.c,.php,.sql,.html,.css,.json">
+
+      <!-- Settings Button -->
+      <button id="btn-open-settings" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-border-color text-xs font-medium flex items-center gap-1.5 transition-colors" title="AI Settings & API Key">
+        <span class="material-symbols-outlined text-[16px] text-primary">settings</span>
+        <span class="hidden sm:inline">Settings</span>
+      </button>
+
+      <!-- Primary Review Action -->
+      <button id="btn-analyze" class="h-9 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-primary/25 transition-all transform active:scale-95">
+        <span class="material-symbols-outlined text-[17px]">auto_fix_high</span>
+        <span>Run AI Review</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Sub-Navigation Tabs -->
+  <div class="h-11 px-4 md:px-6 bg-surface-container-lowest border-b border-border-color flex items-center justify-between overflow-x-auto">
+    <nav class="flex items-center gap-6 h-full text-xs font-medium shrink-0">
+      <button data-tab="review" class="h-full flex items-center gap-1.5 text-primary border-b-2 border-primary font-semibold transition-colors">
+        <span class="material-symbols-outlined text-[16px]">fact_check</span>
+        <span>Review & Issues</span>
+      </button>
+      <button data-tab="diff" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[16px]">difference</span>
+        <span>Visual Diff & Fixes</span>
+      </button>
+      <button data-tab="security" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[16px]">security</span>
+        <span>Security & OWASP</span>
+      </button>
+      <button data-tab="tests" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[16px]">science</span>
+        <span>Generated Unit Tests</span>
+      </button>
+      <button data-tab="export" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined text-[16px]">ios_share</span>
+        <span>Export PR Comment</span>
+      </button>
+    </nav>
+
+    <!-- Quick stats badge in tab bar -->
+    <div id="editor-stats" class="text-[11px] font-mono text-outline hidden md:block">
+      0 lines · 0 words
+    </div>
+  </div>
+
+  <!-- Main Review Canvas Grid -->
+  <main class="flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 max-w-[1920px] mx-auto w-full">
+
+    <!-- LEFT COLUMN: Code Input & Editor (Col 5) -->
+    <section class="lg:col-span-5 flex flex-col gap-3">
+      <!-- Editor Header -->
+      <div class="flex items-center justify-between bg-surface-container p-2.5 rounded-lg border border-border-color">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px] text-primary">terminal</span>
+          <span class="text-xs font-semibold text-white">Source Code Input</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="language-selector" class="h-7 px-2 text-xs rounded bg-surface-container-high border border-border-subtle text-on-surface focus:outline-none focus:border-primary">
+            <option value="javascript">JavaScript / JSX</option>
+            <option value="typescript" selected>TypeScript / TSX</option>
+            <option value="python">Python</option>
+            <option value="go">Go</option>
+            <option value="rust">Rust</option>
+            <option value="java">Java</option>
+            <option value="cpp">C / C++</option>
+            <option value="php">PHP</option>
+            <option value="sql">SQL</option>
+            <option value="html">HTML</option>
+          </select>
+          <button id="btn-clear" class="p-1 rounded text-outline hover:text-danger hover:bg-surface-container-high transition-colors" title="Clear Editor">
+            <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Line-Numbered Code Editor Area -->
+      <div class="code-editor-container flex-1">
+        <div id="line-numbers" class="line-numbers font-mono">1</div>
+        <textarea id="code-input" class="code-textarea" placeholder="// Paste or type your source code here...&#10;// Or click 'Load Sample Scenario' above to test with preloaded vulnerable snippets." spellcheck="false"></textarea>
+      </div>
+
+      <!-- Quick Sample Buttons Footer -->
+      <div class="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
+        <span class="text-outline">Quick test:</span>
+        <button onclick="loadSample('python_security')" class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary border border-border-subtle transition-colors">
+          🐍 Python SQLi
+        </button>
+        <button onclick="loadSample('typescript_auth')" class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary border border-border-subtle transition-colors">
+          ⚡ TypeScript Auth
+        </button>
+        <button onclick="loadSample('react_performance')" class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary border border-border-subtle transition-colors">
+          ⚛️ React Re-render
+        </button>
+        <button onclick="loadSample('go_concurrency')" class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary border border-border-subtle transition-colors">
+          🐹 Go Goroutine Leak
+        </button>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: AI Review Results & Diagnostics (Col 7) -->
+    <section class="lg:col-span-7 flex flex-col gap-4 relative min-h-[500px]">
+
+      <!-- TAB 1: Review & Issues Dashboard -->
+      <div id="tab-content-review" class="flex flex-col gap-4 flex-1">
+
+        <!-- Scorecard & Verdict Card -->
+        <div class="p-4 rounded-xl bg-surface-container border border-border-color shadow-sm flex flex-col gap-3.5">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div id="grade-badge" class="score-badge grade-b">B+</div>
+              <div>
+                <h3 class="text-sm font-bold text-white">Code Health & Architecture Scorecard</h3>
+                <p id="score-overall-text" class="text-xs text-on-surface-variant font-mono">82/100 · Moderate Security Risk</p>
+              </div>
+            </div>
+
+            <!-- Individual Score Mini-Meters -->
+            <div class="grid grid-cols-3 gap-2 w-full sm:w-auto">
+              <!-- Security -->
+              <div class="p-2 rounded bg-surface-container-lowest border border-border-subtle flex flex-col gap-1 text-center min-w-[70px]">
+                <span class="text-[10px] text-outline font-semibold uppercase">Security</span>
+                <span id="score-security-text" class="text-xs font-bold text-danger font-mono">60%</span>
+                <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+                  <div id="score-security-bar" class="bg-danger h-full" style="width: 60%;"></div>
+                </div>
+              </div>
+              <!-- Performance -->
+              <div class="p-2 rounded bg-surface-container-lowest border border-border-subtle flex flex-col gap-1 text-center min-w-[70px]">
+                <span class="text-[10px] text-outline font-semibold uppercase">Perf</span>
+                <span id="score-perf-text" class="text-xs font-bold text-info font-mono">85%</span>
+                <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+                  <div id="score-perf-bar" class="bg-info h-full" style="width: 85%;"></div>
+                </div>
+              </div>
+              <!-- Maintainability -->
+              <div class="p-2 rounded bg-surface-container-lowest border border-border-subtle flex flex-col gap-1 text-center min-w-[70px]">
+                <span class="text-[10px] text-outline font-semibold uppercase">Clean</span>
+                <span id="score-maint-text" class="text-xs font-bold text-secondary font-mono">90%</span>
+                <div class="w-full bg-surface-container h-1 rounded-full overflow-hidden">
+                  <div id="score-maint-bar" class="bg-secondary h-full" style="width: 90%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Verdict Status Banner -->
+          <div id="verdict-banner" class="p-3 rounded-lg border flex items-center justify-between text-body-sm bg-danger/15 text-danger border-danger/30">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[20px]">dangerous</span>
+              <span class="font-semibold text-xs sm:text-sm">Critical Security Blocker — Merge Blocked</span>
+            </div>
+            <span class="text-xs opacity-80">Requires Immediate Attention</span>
+          </div>
+
+          <!-- Executive Summary Paragraph -->
+          <div class="p-3 rounded-lg bg-surface-container-lowest border border-border-subtle text-xs text-on-surface-variant leading-relaxed">
+            <span class="text-white font-semibold">Executive Analysis: </span>
+            <span id="review-summary-text">Ready to analyze. Click "Run AI Review" to begin automated deep AST inspection and security review.</span>
+          </div>
+        </div>
+
+        <!-- Issue Filters & Action Bar -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1 text-xs">
+            <button data-filter="all" class="px-2.5 py-1 rounded bg-surface-container-high text-on-surface font-semibold flex items-center gap-1.5 transition-colors">
+              <span>All</span>
+              <span id="count-all" class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-container-lowest text-outline">0</span>
+            </button>
+            <button data-filter="critical" class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:text-danger flex items-center gap-1.5 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+              <span>Critical</span>
+              <span id="count-critical" class="px-1.5 py-0.2 rounded-full text-[10px] bg-danger/20 text-danger font-semibold">0</span>
+            </button>
+            <button data-filter="warning" class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:text-warning flex items-center gap-1.5 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+              <span>Warnings</span>
+              <span id="count-warning" class="px-1.5 py-0.2 rounded-full text-[10px] bg-warning/20 text-warning font-semibold">0</span>
+            </button>
+            <button data-filter="optimization" class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:text-info flex items-center gap-1.5 transition-colors">
+              <span class="w-1.5 h-1.5 rounded-full bg-info"></span>
+              <span>Optimizations</span>
+              <span id="count-optimization" class="px-1.5 py-0.2 rounded-full text-[10px] bg-info/20 text-info font-semibold">0</span>
+            </button>
+          </div>
+
+          <!-- Quick Fix Button -->
+          <button id="btn-apply-all-fixes" class="px-3 py-1 rounded bg-secondary/15 hover:bg-secondary text-secondary hover:text-black border border-secondary/30 text-xs font-semibold flex items-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[15px]">auto_fix_high</span>
+            <span>Apply All Fixes</span>
+          </button>
+        </div>
+
+        <!-- Issues List Container -->
+        <div id="issues-list-container" class="flex flex-col gap-2.5 overflow-y-auto max-h-[580px] pr-1">
+          <!-- Populated dynamically via JS -->
+          <div class="p-8 text-center text-on-surface-variant flex flex-col items-center gap-2">
+            <span class="material-symbols-outlined text-[36px] text-outline">verified</span>
+            <p class="font-medium text-on-surface">Click "Run AI Review" to start scanning</p>
+            <p class="text-xs text-outline">The analyzer will test for OWASP vulnerabilities, async race conditions, and memory leaks.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Visual Diff & Fixes -->
+      <div id="tab-content-diff" class="hidden flex flex-col gap-3 flex-1">
+        <div class="flex items-center justify-between bg-surface-container p-2.5 rounded-lg border border-border-color">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-secondary">compare</span>
+            <span class="text-xs font-semibold text-white">Interactive Code Diff Viewer</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-surface-container-lowest rounded p-0.5 border border-border-subtle">
+              <button id="diff-split-btn" class="px-2.5 py-1 rounded bg-surface-container-highest text-primary text-xs font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">splitscreen</span>
+                <span>Split</span>
+              </button>
+              <button id="diff-unified-btn" class="px-2.5 py-1 rounded text-on-surface-variant text-xs flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">view_stream</span>
+                <span>Unified</span>
+              </button>
+            </div>
+            <button id="btn-copy-refactored" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-black text-on-surface text-xs font-medium flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Copy Fix</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="diff-render-container" class="flex-1 overflow-x-auto min-h-[460px]">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 3: Security & OWASP Matrix -->
+      <div id="tab-content-security" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-danger">shield</span>
+            <span class="text-xs font-semibold text-white">OWASP Top 10 & CWE Security Matrix</span>
+          </div>
+          <span class="text-xs text-outline font-mono">Automated Threat Modeling</span>
+        </div>
+
+        <div id="security-matrix-container" class="flex flex-col gap-2.5 overflow-y-auto max-h-[560px]">
+          <!-- Security checks populated dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 4: Generated Unit Tests -->
+      <div id="tab-content-tests" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-info">science</span>
+            <span class="text-xs font-semibold text-white">Automated Regression & Vulnerability Test Suite</span>
+          </div>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('generated-tests-code').textContent); showToast('Copied unit tests!', 'success');" class="px-2 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">content_copy</span>
+            <span>Copy Tests</span>
+          </button>
+        </div>
+
+        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
+          <pre id="generated-tests-code"><code>// Run AI Review to generate automated unit tests targeting the discovered edge cases.</code></pre>
+        </div>
+      </div>
+
+      <!-- TAB 5: Export PR Markdown -->
+      <div id="tab-content-export" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-primary">ios_share</span>
+            <span class="text-xs font-semibold text-white">Pull Request & CI/CD Review Summary</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-copy-pr-comment" class="px-2.5 py-1 rounded bg-primary text-black text-xs font-semibold flex items-center gap-1 hover:bg-primary-light transition-colors">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Copy for GitHub PR</span>
+            </button>
+            <button id="btn-export-markdown" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">download</span>
+              <span>Download .md</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
+          <pre id="export-markdown-preview"><code>// Markdown report will appear here once an analysis completes.</code></pre>
+        </div>
+      </div>
+
+      <!-- Loading State Overlay -->
+      <div id="analysis-loading-overlay" class="hidden absolute inset-0 bg-background/80 backdrop-blur-sm z-30 rounded-xl flex flex-col items-center justify-center gap-3">
+        <div class="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
+        <p id="analysis-loading-text" class="text-sm font-semibold text-white">Analyzing AST & Performing Security Audits...</p>
+        <span class="text-xs text-outline">Evaluating OWASP patterns, algorithmic complexity & concurrency safety</span>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Settings & API Key Modal -->
+  <div id="settings-overlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 modal-overlay">
+    <div class="bg-surface-container-low border border-border-color rounded-xl w-full max-w-lg overflow-hidden shadow-2xl modal-box flex flex-col">
+      <!-- Modal Header -->
+      <div class="px-5 py-4 bg-surface-container border-b border-border-color flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-primary">tune</span>
+          <h3 class="text-sm font-bold text-white">AI Engine & Workspace Configuration</h3>
+        </div>
+        <button id="btn-close-settings" class="text-outline hover:text-white p-1 rounded hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 flex flex-col gap-4 text-xs">
+        <!-- Engine / Model Selection -->
+        <div class="flex flex-col gap-1.5">
+          <label class="font-semibold text-on-surface">AI Model & Reasoning Engine</label>
+          <select id="settings-model" class="h-9 px-3 rounded bg-surface-container border border-border-color text-on-surface focus:outline-none focus:border-primary">
+            <option value="gemini-2.5-flash">Google Gemini 2.5 Flash (Recommended - Ultra Fast & Accurate)</option>
+            <option value="gemini-1.5-flash">Google Gemini 1.5 Flash (Lightweight)</option>
+            <option value="gemini-2.5-pro">Google Gemini 2.5 Pro (Deep Architectural Reasoning)</option>
+            <option value="heuristic">Built-in Offline Heuristic Engine (Zero API Key / Free)</option>
+          </select>
+          <p class="text-[11px] text-outline">Gemini models require a free API key from Google AI Studio. Heuristic mode works immediately without any key.</p>
+        </div>
+
+        <!-- Google Gemini API Key -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label class="font-semibold text-on-surface">Gemini API Key (Stored locally in browser)</label>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary hover:underline flex items-center gap-0.5 text-[11px]">
+              <span>Get Free Key</span>
+              <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+            </a>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="password" id="settings-api-key" placeholder="AIzaSy..." class="flex-1 h-9 px-3 rounded bg-surface-container border border-border-color text-on-surface font-mono text-xs focus:outline-none focus:border-primary">
+            <button id="btn-test-key" class="h-9 px-3 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface border border-border-subtle font-medium transition-colors">
+              Test
+            </button>
+          </div>
+          <p class="text-[11px] text-outline">Your key never leaves your browser; requests are sent directly to the official Google Gemini API endpoint.</p>
+        </div>
+
+        <!-- Custom Review Rules -->
+        <div class="flex flex-col gap-1.5">
+          <label class="font-semibold text-on-surface">Custom Review Guardrails & Rules (.rules.ai)</label>
+          <textarea id="settings-rules" rows="3" class="p-2.5 rounded bg-surface-container border border-border-color text-on-surface font-mono text-xs focus:outline-none focus:border-primary" placeholder="Enforce strict typing, forbid direct DOM mutations, enforce security best practices..."></textarea>
+          <p class="text-[11px] text-outline">Instruct the AI on organization-specific coding standards, banned packages, or architecture patterns.</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3.5 bg-surface-container border-t border-border-color flex items-center justify-end gap-2">
+        <button onclick="closeSettingsModal()" class="px-3 py-1.5 rounded text-on-surface-variant hover:text-white text-xs font-medium">Cancel</button>
+        <button id="btn-save-settings" class="px-4 py-1.5 rounded bg-primary hover:bg-primary-light text-black text-xs font-semibold shadow-md shadow-primary/20">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Main JavaScript Bundle -->
+  <script src="app.js"></script>
+</body>
+</html>
