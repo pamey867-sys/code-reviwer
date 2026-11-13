@@ -226,13 +226,34 @@ public class ReportGenerator {
   }
 };
 
-// Initialize Application on DOM Ready
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize Application on DOM Ready or immediately if already loaded
+function initApp() {
+  // Expose global action functions to window for inline HTML onclick handlers
+  window.switchTab = switchTab;
+  window.loadSample = loadSample;
+  window.closeSettingsModal = closeSettingsModal;
+  window.openSettingsModal = openSettingsModal;
+  window.openApiKeyModal = openApiKeyModal;
+  window.runAnalysis = runAnalysis;
+  window.runCodeGeneration = runCodeGeneration;
+  window.runQuickGeneration = runQuickGeneration;
+  window.setGeneratorViewMode = setGeneratorViewMode;
+  window.copyGeneratedCode = copyGeneratedCode;
+  window.loadGeneratedIntoEditor = loadGeneratedIntoEditor;
+  window.autoReviewGeneratedCode = autoReviewGeneratedCode;
+  window.showToast = showToast;
+
   setupEditor();
   setupEventListeners();
   loadStoredSettings();
   loadSample('typescript_auth');
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
 // Setup Code Editor and Line Numbers
 function setupEditor() {
@@ -1954,7 +1975,7 @@ export function hardenedAuthGuard(jwtSecret: string) {
       const [headerB64, payloadB64, signatureB64] = segments;
 
       // 1. Verify HMAC Signature with Constant-Time Equality
-      const signingInput = \`\${headerB64}.\${payloadB64}\`;
+      const signingInput = headerB64 + '.' + payloadB64;
       const expectedSignature = crypto
         .createHmac('sha256', jwtSecret)
         .update(signingInput)
