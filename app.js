@@ -3,6 +3,20 @@
  * Dual-Engine: Google Gemini AI + Offline Heuristic Static Engine
  */
 
+// Global Error Handler to guarantee visible feedback
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error('CodePulse App Error:', message, 'at', source, lineno, colno, error);
+  const container = document.getElementById('toast-container');
+  if (container) {
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-danger flex items-center gap-2 p-3 rounded-lg shadow-xl border border-danger/40 bg-surface-container-highest text-white text-xs max-w-sm';
+    toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger"></i> <span><strong>Script Error:</strong> ${message} (${lineno}:${colno})</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 7000);
+  }
+  return false;
+};
+
 // Application State
 const state = {
   currentLanguage: 'javascript',
@@ -243,6 +257,7 @@ function initApp() {
   window.copyGeneratedCode = copyGeneratedCode;
   window.loadGeneratedIntoEditor = loadGeneratedIntoEditor;
   window.autoReviewGeneratedCode = autoReviewGeneratedCode;
+  window.applySingleFix = applySingleFix;
   window.showToast = showToast;
 
   setupEditor();
@@ -1177,7 +1192,7 @@ function renderIssuesList() {
   }).join('');
 }
 
-window.applySingleFix = function(issueIndex) {
+function applySingleFix(issueIndex) {
   const issue = state.reviewResults?.issues[issueIndex];
   if (!issue || !issue.suggestedFix) return;
 
@@ -2356,7 +2371,7 @@ async function runQuickGeneration(difficulty) {
     showToast(`Generated & loaded ${difficulty.toUpperCase()} logic!`, 'success');
 
     // Automatically review the generated code
-    autoReviewGeneratedCode(difficulty);
+    await autoReviewGeneratedCode(difficulty);
   } catch (err) {
     showToast(`Quick generation error: ${err.message}`, 'danger');
   } finally {
@@ -2393,11 +2408,11 @@ function renderGeneratedResults(result, prompt, language) {
 }
 
 // Global actions for generated code
-window.autoReviewGeneratedCode = function(difficulty) {
+function autoReviewGeneratedCode(difficulty) {
   const item = state.generatedCode[difficulty];
   if (!item || !item.code) {
     showToast('Please generate code first before reviewing!', 'warning');
-    return;
+    return Promise.resolve();
   }
 
   const textarea = document.getElementById('code-input');
@@ -2414,10 +2429,10 @@ window.autoReviewGeneratedCode = function(difficulty) {
 
   switchTab('review');
   showToast(`Auto-reviewing generated ${difficulty.toUpperCase()} logic...`, 'info');
-  runAnalysis();
-};
+  return runAnalysis();
+}
 
-window.loadGeneratedIntoEditor = function(difficulty) {
+function loadGeneratedIntoEditor(difficulty) {
   const item = state.generatedCode[difficulty];
   if (!item || !item.code) {
     showToast('Please generate code first!', 'warning');
@@ -2438,9 +2453,9 @@ window.loadGeneratedIntoEditor = function(difficulty) {
 
   switchTab('review');
   showToast(`Loaded ${difficulty.toUpperCase()} logic into editor`, 'success');
-};
+}
 
-window.copyGeneratedCode = function(difficulty) {
+function copyGeneratedCode(difficulty) {
   const item = state.generatedCode[difficulty];
   if (!item || !item.code) {
     showToast('No code to copy yet. Generate code first!', 'warning');
@@ -2449,9 +2464,9 @@ window.copyGeneratedCode = function(difficulty) {
 
   navigator.clipboard.writeText(item.code);
   showToast(`Copied ${difficulty.toUpperCase()} logic code to clipboard!`, 'success');
-};
+}
 
-window.setGeneratorViewMode = function(mode) {
+function setGeneratorViewMode(mode) {
   state.generatorViewMode = mode;
 
   const btnSplit = document.getElementById('gen-view-split');
@@ -2472,23 +2487,23 @@ window.setGeneratorViewMode = function(mode) {
     btnSplit?.classList.remove('text-on-surface-variant');
     cardEasy?.classList.remove('hidden', 'md:col-span-2');
     cardHard?.classList.remove('hidden', 'md:col-span-2');
-    grid?.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+    if (grid) grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
   } else if (mode === 'easy') {
     btnEasy?.classList.add('bg-surface-container-high', 'text-primary', 'font-semibold');
     btnEasy?.classList.remove('text-on-surface-variant');
     cardEasy?.classList.remove('hidden');
     cardEasy?.classList.add('md:col-span-2');
     cardHard?.classList.add('hidden');
-    grid?.className = 'grid grid-cols-1 gap-4';
+    if (grid) grid.className = 'grid grid-cols-1 gap-4';
   } else if (mode === 'hard') {
     btnHard?.classList.add('bg-surface-container-high', 'text-primary', 'font-semibold');
     btnHard?.classList.remove('text-on-surface-variant');
     cardHard?.classList.remove('hidden');
     cardHard?.classList.add('md:col-span-2');
     cardEasy?.classList.add('hidden');
-    grid?.className = 'grid grid-cols-1 gap-4';
+    if (grid) grid.className = 'grid grid-cols-1 gap-4';
   }
-};
+}
 
 // =============================================================
 // Toast Notifications & Helpers
