@@ -182,8 +182,8 @@
         <!-- Prompt input and 1-click Easy/Hard generation buttons -->
         <div class="flex flex-col gap-1.5">
           <div class="relative">
-            <input type="text" id="quick-gen-input" placeholder="What code to generate? (e.g. LRU Cache, Rate Limiter, Auth Guard, Tree)" class="w-full h-8 pl-8 pr-3 rounded bg-surface-container-lowest border border-border-color text-xs text-on-surface focus:outline-none focus:border-primary font-mono placeholder:text-outline">
-            <span class="material-symbols-outlined text-[15px] text-outline absolute left-2.5 top-2 pointer-events-none">search</span>
+            <input type="text" id="quick-gen-input" placeholder="What code to generate? (e.g. LRU Cache, Rate Limiter, Auth Guard, Tree)" class="w-full h-8 pl-8 pr-3 rounded bg-white text-slate-900 border border-slate-300 text-xs focus:outline-none focus:border-primary font-mono placeholder:text-slate-500 font-medium">
+            <span class="material-symbols-outlined text-[15px] text-slate-500 absolute left-2.5 top-2 pointer-events-none">search</span>
           </div>
 
           <div class="flex items-center justify-between gap-1.5 flex-wrap">
@@ -231,6 +231,10 @@
             <option value="sql">SQL</option>
             <option value="html">HTML</option>
           </select>
+          <button id="btn-toggle-editor-theme" class="h-7 px-2 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-primary border border-border-subtle text-xs flex items-center gap-1 transition-colors" title="Toggle Light / Dark Editor Theme (Dark Text)">
+            <span class="material-symbols-outlined text-[14px]">contrast</span>
+            <span id="editor-theme-label" class="text-[10px] font-semibold">Dark Text</span>
+          </button>
           <button id="btn-clear" class="p-1 rounded text-outline hover:text-danger hover:bg-surface-container-high transition-colors" title="Clear Editor">
             <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
           </button>
@@ -400,12 +404,12 @@
           <div class="flex flex-col gap-2 pt-1">
             <div class="flex flex-col sm:flex-row gap-2">
               <div class="relative flex-1">
-                <span class="material-symbols-outlined text-[18px] text-outline absolute left-3 top-2.5">prompt_suggestion</span>
-                <input type="text" id="gen-prompt-input" placeholder="e.g. LRU Cache with TTL, Token Bucket Rate Limiter, JWT Auth Middleware, Binary Search Tree..." class="w-full h-10 pl-9 pr-3 rounded-lg bg-surface-container-lowest border border-border-color text-on-surface text-xs placeholder:text-outline focus:outline-none focus:border-primary transition-all font-mono">
+                <span class="material-symbols-outlined text-[18px] text-slate-500 absolute left-3 top-2.5 pointer-events-none">prompt_suggestion</span>
+                <input type="text" id="gen-prompt-input" placeholder="e.g. LRU Cache with TTL, Token Bucket Rate Limiter, JWT Auth Middleware, Binary Search Tree..." class="w-full h-10 pl-9 pr-3 rounded-lg bg-white text-slate-900 border border-slate-300 text-xs placeholder:text-slate-500 focus:outline-none focus:border-primary transition-all font-mono font-medium">
               </div>
 
               <!-- Language selector -->
-              <select id="gen-language-select" class="h-10 px-3 rounded-lg bg-surface-container-lowest border border-border-color text-on-surface text-xs focus:outline-none focus:border-primary font-mono shrink-0">
+              <select id="gen-language-select" class="h-10 px-3 rounded-lg bg-surface-container border border-border-color text-on-surface text-xs focus:outline-none focus:border-primary font-mono shrink-0">
                 <option value="javascript">JavaScript</option>
                 <option value="typescript" selected>TypeScript</option>
                 <option value="python">Python</option>

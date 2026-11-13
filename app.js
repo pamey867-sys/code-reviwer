@@ -258,11 +258,13 @@ function initApp() {
   window.loadGeneratedIntoEditor = loadGeneratedIntoEditor;
   window.autoReviewGeneratedCode = autoReviewGeneratedCode;
   window.applySingleFix = applySingleFix;
+  window.toggleEditorTheme = toggleEditorTheme;
   window.showToast = showToast;
 
   setupEditor();
   setupEventListeners();
   loadStoredSettings();
+  loadStoredEditorTheme();
   loadSample('typescript_auth');
 }
 
@@ -322,6 +324,27 @@ function updateEditorStats() {
   }
 }
 
+function toggleEditorTheme() {
+  const container = document.querySelector('.code-editor-container');
+  const label = document.getElementById('editor-theme-label');
+  if (!container) return;
+
+  const isDarkText = container.classList.toggle('dark-text-mode');
+  localStorage.setItem('codepulse_editor_theme', isDarkText ? 'dark-text' : 'light-text');
+  if (label) label.textContent = isDarkText ? 'Light Text' : 'Dark Text';
+  showToast(isDarkText ? 'Editor set to Light background with Dark Text' : 'Editor set to Dark background with Light Text', 'info');
+}
+
+function loadStoredEditorTheme() {
+  const saved = localStorage.getItem('codepulse_editor_theme');
+  if (saved === 'dark-text') {
+    const container = document.querySelector('.code-editor-container');
+    const label = document.getElementById('editor-theme-label');
+    container?.classList.add('dark-text-mode');
+    if (label) label.textContent = 'Light Text';
+  }
+}
+
 // =============================================================
 // Event Listeners Setup
 // =============================================================
@@ -364,6 +387,9 @@ function setupEventListeners() {
       showToast('Editor cleared', 'info');
     }
   });
+
+  // Toggle Editor Dark/Light Text Mode
+  document.getElementById('btn-toggle-editor-theme')?.addEventListener('click', toggleEditorTheme);
 
   // Direct Quick Generator Panel Listeners
   document.getElementById('btn-quick-gen-easy')?.addEventListener('click', () => runQuickGeneration('easy'));

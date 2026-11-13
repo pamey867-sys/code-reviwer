@@ -362,3 +362,52 @@ body {
   from { transform: translateY(16px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* ==========================================================================
+   High-Contrast Dark Text for Textboxes & Editor Modes
+   ========================================================================== */
+#quick-gen-input,
+#gen-prompt-input {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* High-contrast crisp dark text */
+  caret-color: #0f172a !important;
+  font-weight: 500 !important;
+  border: 1px solid #94a3b8 !important;
+}
+
+#quick-gen-input::placeholder,
+#gen-prompt-input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+  font-style: italic;
+}
+
+#quick-gen-input:focus,
+#gen-prompt-input:focus {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #7c3aed !important;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25) !important;
+}
+
+/* Editor Light / Dark Text Mode */
+.code-editor-container.dark-text-mode {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+.code-editor-container.dark-text-mode .line-numbers {
+  background-color: #e2e8f0 !important;
+  border-right-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+.code-editor-container.dark-text-mode .code-textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* Pure dark text in code editor */
+  caret-color: #000000 !important;
+}
+
+.code-editor-container.dark-text-mode .code-textarea::placeholder {
+  color: #94a3b8 !important;
+}
