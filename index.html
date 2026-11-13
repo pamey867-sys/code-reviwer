@@ -77,6 +77,18 @@
 
     <!-- Header Actions Toolbar -->
     <div class="flex items-center gap-2">
+      <!-- Add API Key Button -->
+      <button id="btn-header-api-key" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-primary/40 text-xs font-semibold flex items-center gap-1.5 transition-all api-key-pulse" title="Configure or Add Gemini API Key">
+        <span class="material-symbols-outlined text-[16px] text-primary">key</span>
+        <span id="header-api-key-text">Add API Key</span>
+      </button>
+
+      <!-- Quick AI Code Generator Button -->
+      <button id="btn-header-generate" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary border border-primary/20 text-xs font-semibold flex items-center gap-1.5 transition-colors" title="Open AI Code Generator">
+        <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+        <span class="hidden sm:inline">Generate Code</span>
+      </button>
+
       <!-- Preloaded Samples -->
       <div class="relative hidden lg:block">
         <select id="sample-selector" class="h-9 pl-3 pr-8 text-xs rounded-lg bg-surface-container border border-border-color text-on-surface focus:outline-none focus:border-primary appearance-none cursor-pointer">
@@ -118,6 +130,11 @@
         <span class="material-symbols-outlined text-[16px]">fact_check</span>
         <span>Review & Issues</span>
       </button>
+      <button data-tab="generator" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-medium relative">
+        <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
+        <span>AI Code Generator</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-primary/20 text-primary font-bold">Dual-Logic</span>
+      </button>
       <button data-tab="diff" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
         <span class="material-symbols-outlined text-[16px]">difference</span>
         <span>Visual Diff & Fixes</span>
@@ -154,6 +171,10 @@
           <span class="text-xs font-semibold text-white">Source Code Input</span>
         </div>
         <div class="flex items-center gap-2">
+          <button id="btn-quick-generate" class="h-7 px-2.5 rounded bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 text-xs font-semibold flex items-center gap-1 transition-colors" title="Switch to AI Code Generator">
+            <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+            <span>Generate Code</span>
+          </button>
           <select id="language-selector" class="h-7 px-2 text-xs rounded bg-surface-container-high border border-border-subtle text-on-surface focus:outline-none focus:border-primary">
             <option value="javascript">JavaScript / JSX</option>
             <option value="typescript" selected>TypeScript / TSX</option>
@@ -384,6 +405,213 @@
 
         <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
           <pre id="export-markdown-preview"><code>// Markdown report will appear here once an analysis completes.</code></pre>
+        </div>
+      </div>
+
+      <!-- TAB: AI Dual-Logic Code Generator -->
+      <div id="tab-content-generator" class="hidden flex flex-col gap-4 flex-1">
+        <!-- Generator Hero Banner -->
+        <div class="p-4 rounded-xl bg-surface-container border border-border-color shadow-sm flex flex-col gap-3">
+          <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
+                  <span>AI Dual-Logic Code Generator</span>
+                </h3>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-primary/20 text-primary border border-primary/30 font-semibold">Easy & Hard Logic</span>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                Generate runnable code from any concept with <strong>two distinct architectural implementations</strong>: 
+                <span class="text-secondary font-medium">Easy Logic (clean, beginner-friendly)</span> vs. 
+                <span class="text-danger font-medium">Hard Logic (advanced, optimized, edge-case heavy)</span>. Then <strong>auto-review</strong> either version with 1 click!
+              </p>
+            </div>
+
+            <!-- Auto-Review Immediately Checkbox -->
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-on-surface bg-surface-container-high px-3 py-1.5 rounded-lg border border-border-subtle shrink-0 hover:border-primary/40 transition-colors">
+              <input type="checkbox" id="gen-auto-review-toggle" class="accent-primary rounded" checked>
+              <span class="font-medium text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">auto_fix_high</span>
+                Auto-Review Generated Code
+              </span>
+            </label>
+          </div>
+
+          <!-- Prompt Input Bar -->
+          <div class="flex flex-col gap-2 pt-1">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <div class="relative flex-1">
+                <span class="material-symbols-outlined text-[18px] text-outline absolute left-3 top-2.5">prompt_suggestion</span>
+                <input type="text" id="gen-prompt-input" placeholder="e.g. LRU Cache with TTL, Token Bucket Rate Limiter, JWT Auth Middleware, Binary Search Tree..." class="w-full h-10 pl-9 pr-3 rounded-lg bg-surface-container-lowest border border-border-color text-on-surface text-xs placeholder:text-outline focus:outline-none focus:border-primary transition-all font-mono">
+              </div>
+
+              <!-- Language selector -->
+              <select id="gen-language-select" class="h-10 px-3 rounded-lg bg-surface-container-lowest border border-border-color text-on-surface text-xs focus:outline-none focus:border-primary font-mono shrink-0">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript" selected>TypeScript</option>
+                <option value="python">Python</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="sql">SQL</option>
+              </select>
+
+              <!-- Generate Button -->
+              <button id="btn-run-generate" class="h-10 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 shrink-0 transition-all transform active:scale-95">
+                <span class="material-symbols-outlined text-[17px]">auto_awesome</span>
+                <span id="btn-run-generate-text">Generate Code</span>
+              </button>
+            </div>
+
+            <!-- Quick Prompt Inspiration Chips -->
+            <div class="flex items-center gap-1.5 flex-wrap pt-1 text-xs">
+              <span class="text-outline text-[11px] font-medium mr-1">Quick prompts:</span>
+              <button type="button" class="prompt-chip" data-prompt="LRU Cache with get/put operations and eviction">⚡ LRU Cache</button>
+              <button type="button" class="prompt-chip" data-prompt="Token Bucket API Rate Limiter middleware">⏱️ Rate Limiter</button>
+              <button type="button" class="prompt-chip" data-prompt="JWT Authentication & Bearer Token Validator middleware">🛡️ Auth Middleware</button>
+              <button type="button" class="prompt-chip" data-prompt="Self-balancing Binary Search Tree with search, insert, and delete">🌳 Binary Search Tree</button>
+              <button type="button" class="prompt-chip" data-prompt="Async HTTP Retry with Exponential Backoff and jitter">🔄 Async Retry Backoff</button>
+              <button type="button" class="prompt-chip" data-prompt="Bounded Concurrent Worker Pool queue with backpressure">🔀 Concurrent Worker Pool</button>
+              <button type="button" class="prompt-chip" data-prompt="Memoized Fibonacci & Dynamic Programming cache">🧮 Memoized DP</button>
+              <button type="button" class="prompt-chip" data-prompt="Debounce & Throttle wrapper function with cancel method">⏱️ Debounce & Throttle</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Switcher & Topic Status -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1 bg-surface-container rounded-lg p-0.5 border border-border-subtle text-xs">
+            <button id="gen-view-split" class="px-3 py-1 rounded bg-surface-container-high text-primary font-semibold flex items-center gap-1.5 transition-colors">
+              <span class="material-symbols-outlined text-[15px]">splitscreen</span>
+              <span>Compare Side-by-Side</span>
+            </button>
+            <button id="gen-view-easy" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              <span>Easy Logic Only</span>
+            </button>
+            <button id="gen-view-hard" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+              <span class="w-2 h-2 rounded-full bg-danger"></span>
+              <span>Hard Logic Only</span>
+            </button>
+          </div>
+
+          <div class="text-[11px] text-outline font-mono" id="gen-active-topic-badge">
+            Select or enter a prompt above to generate code
+          </div>
+        </div>
+
+        <!-- Generated Code Cards Grid -->
+        <div id="gen-results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- CARD 1: Easy Logic Implementation -->
+          <div id="card-easy-logic" class="generator-card flex flex-col overflow-hidden border-secondary/30">
+            <!-- Card Header -->
+            <div class="p-3 bg-surface-container border-b border-border-color flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider badge-easy flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                  <span>Easy Logic</span>
+                </span>
+                <span class="text-xs font-semibold text-white truncate" id="easy-logic-title">Straightforward Implementation</span>
+              </div>
+              <span class="text-[11px] font-mono text-secondary font-semibold" id="easy-logic-complexity">O(N) Time · O(1) Space</span>
+            </div>
+
+            <!-- Card Sub-header & Explanation -->
+            <div class="p-3 bg-surface-container-lowest border-b border-border-subtle text-xs text-on-surface-variant leading-relaxed">
+              <div class="flex items-center gap-1 text-secondary font-medium mb-1">
+                <span class="material-symbols-outlined text-[14px]">psychology</span>
+                <span>Philosophy & Structure:</span>
+              </div>
+              <p id="easy-logic-explanation" class="text-xs text-on-surface">
+                Clear, straightforward logic designed for maximum readability. Uses standard procedural loops and standard types without complex abstractions.
+              </p>
+            </div>
+
+            <!-- Code Display -->
+            <div class="p-3 flex-1 flex flex-col gap-2 bg-surface-container-low">
+              <div class="relative flex-1">
+                <pre class="generator-code-pre"><code id="easy-logic-code">// Click 'Generate Code' above to view the Easy Logic implementation...</code></pre>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                <button onclick="copyGeneratedCode('easy')" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                  <span>Copy Code</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                  <button onclick="loadGeneratedIntoEditor('easy')" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-xs text-on-surface border border-border-subtle flex items-center gap-1 transition-colors" title="Load into Editor without reviewing">
+                    <span class="material-symbols-outlined text-[14px]">input</span>
+                    <span>Load in Editor</span>
+                  </button>
+
+                  <button onclick="autoReviewGeneratedCode('easy')" class="px-3 py-1.5 rounded-lg bg-secondary text-black hover:bg-secondary-fixed text-xs font-bold flex items-center gap-1.5 shadow-md shadow-secondary/20 transition-all transform active:scale-95" title="Copy to editor & run AI code review instantly">
+                    <span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                    <span>Auto Review (Easy)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 2: Hard / Advanced Logic Implementation -->
+          <div id="card-hard-logic" class="generator-card flex flex-col overflow-hidden border-danger/30">
+            <!-- Card Header -->
+            <div class="p-3 bg-surface-container border-b border-border-color flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider badge-hard flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">bolt</span>
+                  <span>Hard Logic</span>
+                </span>
+                <span class="text-xs font-semibold text-white truncate" id="hard-logic-title">Advanced & Optimized Implementation</span>
+              </div>
+              <span class="text-[11px] font-mono text-danger font-semibold" id="hard-logic-complexity">O(1) Amortized · O(N) Space</span>
+            </div>
+
+            <!-- Card Sub-header & Explanation -->
+            <div class="p-3 bg-surface-container-lowest border-b border-border-subtle text-xs text-on-surface-variant leading-relaxed">
+              <div class="flex items-center gap-1 text-danger font-medium mb-1">
+                <span class="material-symbols-outlined text-[14px]">precision_manufacturing</span>
+                <span>Philosophy & Structure:</span>
+              </div>
+              <p id="hard-logic-explanation" class="text-xs text-on-surface">
+                Production-grade, algorithmic depth with defensive error boundaries, lock-free/concurrency safety, edge-case sanitization, and peak algorithmic performance.
+              </p>
+            </div>
+
+            <!-- Code Display -->
+            <div class="p-3 flex-1 flex flex-col gap-2 bg-surface-container-low">
+              <div class="relative flex-1">
+                <pre class="generator-code-pre"><code id="hard-logic-code">// Click 'Generate Code' above to view the Hard / Advanced Logic implementation...</code></pre>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                <button onclick="copyGeneratedCode('hard')" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1 transition-colors">
+                  <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                  <span>Copy Code</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                  <button onclick="loadGeneratedIntoEditor('hard')" class="px-2.5 py-1 rounded bg-surface-container hover:bg-surface-container-high text-xs text-on-surface border border-border-subtle flex items-center gap-1 transition-colors" title="Load into Editor without reviewing">
+                    <span class="material-symbols-outlined text-[14px]">input</span>
+                    <span>Load in Editor</span>
+                  </button>
+
+                  <button onclick="autoReviewGeneratedCode('hard')" class="px-3 py-1.5 rounded-lg bg-danger text-black hover:bg-danger/90 text-xs font-bold flex items-center gap-1.5 shadow-md shadow-danger/20 transition-all transform active:scale-95" title="Copy to editor & run AI code review instantly">
+                    <span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+                    <span>Auto Review (Hard)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
