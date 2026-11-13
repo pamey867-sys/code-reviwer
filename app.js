@@ -373,6 +373,26 @@ function setupEventListeners() {
     setTimeout(() => document.getElementById('gen-prompt-input')?.focus(), 150);
   });
 
+  // Direct Quick Generator Panel Listeners
+  document.getElementById('btn-quick-gen-easy')?.addEventListener('click', () => runQuickGeneration('easy'));
+  document.getElementById('btn-quick-gen-hard')?.addEventListener('click', () => runQuickGeneration('hard'));
+  document.getElementById('quick-gen-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runQuickGeneration('hard');
+    }
+  });
+  document.querySelectorAll('.quick-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.q;
+      const input = document.getElementById('quick-gen-input');
+      if (input && q) {
+        input.value = q;
+        runQuickGeneration('hard');
+      }
+    });
+  });
+
   // Code Generator Execution
   document.getElementById('btn-run-generate')?.addEventListener('click', runCodeGeneration);
   document.getElementById('gen-prompt-input')?.addEventListener('keydown', (e) => {
@@ -2507,6 +2527,53 @@ function renderGeneratedResults(result, prompt, language) {
   const badge = document.getElementById('gen-active-topic-badge');
   if (badge) {
     badge.textContent = `Active: ${prompt} · Language: ${language.toUpperCase()}`;
+  }
+}
+
+// Quick Generation directly from Left Editor Panel
+async function runQuickGeneration(difficulty) {
+  const input = document.getElementById('quick-gen-input');
+  const prompt = input?.value.trim() || 'LRU Cache with TTL';
+  const language = state.currentLanguage || 'typescript';
+
+  const btnEasy = document.getElementById('btn-quick-gen-easy');
+  const btnHard = document.getElementById('btn-quick-gen-hard');
+
+  if (btnEasy) btnEasy.disabled = true;
+  if (btnHard) btnHard.disabled = true;
+
+  showToast(`Generating ${difficulty.toUpperCase()} logic for "${prompt}"...`, 'info');
+
+  try {
+    let result = null;
+    if (state.apiKey && state.selectedModel !== 'heuristic') {
+      try {
+        result = await generateCodeWithGemini(prompt, language, state.apiKey, state.selectedModel);
+      } catch (geminiErr) {
+        result = generateCodeWithTemplates(prompt, language);
+      }
+    } else {
+      await new Promise(r => setTimeout(r, 300));
+      result = generateCodeWithTemplates(prompt, language);
+    }
+
+    state.generatedCode = {
+      easy: result.easy,
+      hard: result.hard,
+      language: language,
+      prompt: prompt
+    };
+
+    renderGeneratedResults(result, prompt, language);
+    showToast(`Generated & loaded ${difficulty.toUpperCase()} logic!`, 'success');
+
+    // Automatically review the generated code
+    autoReviewGeneratedCode(difficulty);
+  } catch (err) {
+    showToast(`Quick generation error: ${err.message}`, 'danger');
+  } finally {
+    if (btnEasy) btnEasy.disabled = false;
+    if (btnHard) btnHard.disabled = false;
   }
 }
 

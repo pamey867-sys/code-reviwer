@@ -164,6 +164,50 @@
 
     <!-- LEFT COLUMN: Code Input & Editor (Col 5) -->
     <section class="lg:col-span-5 flex flex-col gap-3">
+
+      <!-- Direct AI Code Generator Panel (Easy & Hard Logic) -->
+      <div class="p-3 rounded-lg bg-surface-container border border-primary/30 shadow-md flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
+            <span class="text-xs font-bold text-white">AI Code Generator</span>
+            <span class="px-1.5 py-0.2 rounded text-[10px] bg-primary/20 text-primary font-mono font-semibold">Easy & Hard Logic</span>
+          </div>
+          <button onclick="switchTab('generator')" class="text-[11px] text-primary hover:underline flex items-center gap-0.5">
+            <span>Dual-Logic Workspace</span>
+            <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- Prompt input and 1-click Easy/Hard generation buttons -->
+        <div class="flex flex-col gap-1.5">
+          <div class="relative">
+            <input type="text" id="quick-gen-input" placeholder="What code to generate? (e.g. LRU Cache, Rate Limiter, Auth Guard, Tree)" class="w-full h-8 pl-8 pr-3 rounded bg-surface-container-lowest border border-border-color text-xs text-on-surface focus:outline-none focus:border-primary font-mono placeholder:text-outline">
+            <span class="material-symbols-outlined text-[15px] text-outline absolute left-2.5 top-2 pointer-events-none">search</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-1.5 flex-wrap">
+            <div class="flex items-center gap-1.5">
+              <button id="btn-quick-gen-easy" class="px-2.5 py-1 rounded bg-secondary/20 hover:bg-secondary text-secondary hover:text-black border border-secondary/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Easy/Beginner Logic & Auto-Review">
+                <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                <span>Generate Easy Logic</span>
+              </button>
+              <button id="btn-quick-gen-hard" class="px-2.5 py-1 rounded bg-danger/20 hover:bg-danger text-danger hover:text-black border border-danger/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Hard/Advanced Logic & Auto-Review">
+                <span class="material-symbols-outlined text-[14px]">bolt</span>
+                <span>Generate Hard Logic</span>
+              </button>
+            </div>
+
+            <!-- Quick chip prompts -->
+            <div class="hidden sm:flex items-center gap-1 text-[10px]">
+              <button type="button" class="quick-chip px-1.5 py-0.5 rounded bg-surface-container-high hover:text-primary text-outline border border-border-subtle transition-colors" data-q="LRU Cache with TTL">LRU Cache</button>
+              <button type="button" class="quick-chip px-1.5 py-0.5 rounded bg-surface-container-high hover:text-primary text-outline border border-border-subtle transition-colors" data-q="Token Bucket Rate Limiter">Rate Limiter</button>
+              <button type="button" class="quick-chip px-1.5 py-0.5 rounded bg-surface-container-high hover:text-primary text-outline border border-border-subtle transition-colors" data-q="JWT Auth Middleware">Auth Guard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Editor Header -->
       <div class="flex items-center justify-between bg-surface-container p-2.5 rounded-lg border border-border-color">
         <div class="flex items-center gap-2">
