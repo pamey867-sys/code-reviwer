@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodePulse AI — Intelligent Code Reviewer</title>
-  <meta name="description" content="Lightning-fast, highly accurate AI Code Reviewer. Detect vulnerabilities, logic bugs, performance leaks, and generate instant automated fixes.">
+  <title>CodePulse AI — Intelligent Code Reviewer & Generator</title>
+  <meta name="description" content="Lightning-fast AI Code Reviewer & Dual-Logic Code Generator. Detect security flaws, compare Easy vs Hard logic, and generate automated fixes.">
 
   <!-- Google Fonts: Geist & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,7 @@
 
   <!-- Top Global Header -->
   <header class="h-16 px-4 md:px-6 bg-surface-container-low/95 border-b border-border-color sticky top-0 z-40 backdrop-blur-md flex items-center justify-between gap-4">
-    <!-- Brand & Status -->
+    <!-- Brand & Logo -->
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shadow-sm shadow-primary/20">
         <span class="material-symbols-outlined text-[22px]">code_blocks</span>
@@ -64,9 +64,9 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="font-bold text-base tracking-tight text-white">CodePulse AI</span>
-          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-container-high text-primary border border-primary/20">v2.5</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-surface-container-high text-primary border border-primary/20">v2.6</span>
         </div>
-        <p class="text-[11px] text-on-surface-variant hidden sm:block">AI-Powered Senior Code Review & Security Diagnostics</p>
+        <p class="text-[11px] text-on-surface-variant hidden sm:block">AI-Powered Senior Code Reviewer & Dual-Logic Generator</p>
       </div>
     </div>
 
@@ -78,13 +78,13 @@
     <!-- Header Actions Toolbar -->
     <div class="flex items-center gap-2">
       <!-- Add API Key Button -->
-      <button id="btn-header-api-key" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-primary/40 text-xs font-semibold flex items-center gap-1.5 transition-all api-key-pulse" title="Configure or Add Gemini API Key">
+      <button id="btn-header-api-key" onclick="openApiKeyModal()" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-primary/40 text-xs font-semibold flex items-center gap-1.5 transition-all api-key-pulse" title="Configure or Add Gemini API Key">
         <span class="material-symbols-outlined text-[16px] text-primary">key</span>
         <span id="header-api-key-text">Add API Key</span>
       </button>
 
       <!-- Quick AI Code Generator Button -->
-      <button id="btn-header-generate" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary border border-primary/20 text-xs font-semibold flex items-center gap-1.5 transition-colors" title="Open AI Code Generator">
+      <button id="btn-header-generate" onclick="switchTab('generator')" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary border border-primary/20 text-xs font-semibold flex items-center gap-1.5 transition-colors" title="Open AI Code Generator">
         <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
         <span class="hidden sm:inline">Generate Code</span>
       </button>
@@ -110,13 +110,13 @@
       <input type="file" id="file-upload-input" class="hidden" accept=".js,.ts,.jsx,.tsx,.py,.go,.rs,.java,.cpp,.c,.php,.sql,.html,.css,.json">
 
       <!-- Settings Button -->
-      <button id="btn-open-settings" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-border-color text-xs font-medium flex items-center gap-1.5 transition-colors" title="AI Settings & API Key">
+      <button id="btn-open-settings" onclick="openSettingsModal()" class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-border-color text-xs font-medium flex items-center gap-1.5 transition-colors" title="AI Settings & API Key">
         <span class="material-symbols-outlined text-[16px] text-primary">settings</span>
         <span class="hidden sm:inline">Settings</span>
       </button>
 
       <!-- Primary Review Action -->
-      <button id="btn-analyze" class="h-9 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-primary/25 transition-all transform active:scale-95">
+      <button id="btn-analyze" onclick="runAnalysis()" class="h-9 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-semibold flex items-center gap-1.5 shadow-lg shadow-primary/25 transition-all transform active:scale-95">
         <span class="material-symbols-outlined text-[17px]">auto_fix_high</span>
         <span>Run AI Review</span>
       </button>
@@ -126,28 +126,28 @@
   <!-- Workspace Sub-Navigation Tabs -->
   <div class="h-11 px-4 md:px-6 bg-surface-container-lowest border-b border-border-color flex items-center justify-between overflow-x-auto">
     <nav class="flex items-center gap-6 h-full text-xs font-medium shrink-0">
-      <button data-tab="review" class="h-full flex items-center gap-1.5 text-primary border-b-2 border-primary font-semibold transition-colors">
+      <button data-tab="review" onclick="switchTab('review')" class="h-full flex items-center gap-1.5 text-primary border-b-2 border-primary font-semibold transition-colors">
         <span class="material-symbols-outlined text-[16px]">fact_check</span>
         <span>Review & Issues</span>
       </button>
-      <button data-tab="generator" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-medium relative">
+      <button data-tab="generator" onclick="switchTab('generator')" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors font-medium relative">
         <span class="material-symbols-outlined text-[16px] text-primary">auto_awesome</span>
         <span>AI Code Generator</span>
         <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-primary/20 text-primary font-bold">Dual-Logic</span>
       </button>
-      <button data-tab="diff" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+      <button data-tab="diff" onclick="switchTab('diff')" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
         <span class="material-symbols-outlined text-[16px]">difference</span>
         <span>Visual Diff & Fixes</span>
       </button>
-      <button data-tab="security" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+      <button data-tab="security" onclick="switchTab('security')" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
         <span class="material-symbols-outlined text-[16px]">security</span>
         <span>Security & OWASP</span>
       </button>
-      <button data-tab="tests" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+      <button data-tab="tests" onclick="switchTab('tests')" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
         <span class="material-symbols-outlined text-[16px]">science</span>
         <span>Generated Unit Tests</span>
       </button>
-      <button data-tab="export" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
+      <button data-tab="export" onclick="switchTab('export')" class="h-full flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface transition-colors">
         <span class="material-symbols-outlined text-[16px]">ios_share</span>
         <span>Export PR Comment</span>
       </button>
@@ -188,11 +188,11 @@
 
           <div class="flex items-center justify-between gap-1.5 flex-wrap">
             <div class="flex items-center gap-1.5">
-              <button id="btn-quick-gen-easy" class="px-2.5 py-1 rounded bg-secondary/20 hover:bg-secondary text-secondary hover:text-black border border-secondary/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Easy/Beginner Logic & Auto-Review">
+              <button id="btn-quick-gen-easy" onclick="runQuickGeneration('easy')" class="px-2.5 py-1 rounded bg-secondary/20 hover:bg-secondary text-secondary hover:text-black border border-secondary/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Easy/Beginner Logic & Auto-Review">
                 <span class="material-symbols-outlined text-[14px]">check_circle</span>
                 <span>Generate Easy Logic</span>
               </button>
-              <button id="btn-quick-gen-hard" class="px-2.5 py-1 rounded bg-danger/20 hover:bg-danger text-danger hover:text-black border border-danger/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Hard/Advanced Logic & Auto-Review">
+              <button id="btn-quick-gen-hard" onclick="runQuickGeneration('hard')" class="px-2.5 py-1 rounded bg-danger/20 hover:bg-danger text-danger hover:text-black border border-danger/40 text-xs font-semibold flex items-center gap-1 transition-all" title="Generate Hard/Advanced Logic & Auto-Review">
                 <span class="material-symbols-outlined text-[14px]">bolt</span>
                 <span>Generate Hard Logic</span>
               </button>
@@ -215,7 +215,7 @@
           <span class="text-xs font-semibold text-white">Source Code Input</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="btn-quick-generate" class="h-7 px-2.5 rounded bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 text-xs font-semibold flex items-center gap-1 transition-colors" title="Switch to AI Code Generator">
+          <button id="btn-quick-generate" onclick="switchTab('generator')" class="h-7 px-2.5 rounded bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 text-xs font-semibold flex items-center gap-1 transition-colors" title="Switch to AI Code Generator">
             <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
             <span>Generate Code</span>
           </button>
@@ -240,12 +240,12 @@
       <!-- Line-Numbered Code Editor Area -->
       <div class="code-editor-container flex-1">
         <div id="line-numbers" class="line-numbers font-mono">1</div>
-        <textarea id="code-input" class="code-textarea" placeholder="// Paste or type your source code here...&#10;// Or click 'Load Sample Scenario' above to test with preloaded vulnerable snippets." spellcheck="false"></textarea>
+        <textarea id="code-input" class="code-textarea" placeholder="// Paste or type your source code here...&#10;// Or click 'Generate Code' above to generate solutions automatically." spellcheck="false"></textarea>
       </div>
 
       <!-- Quick Sample Buttons Footer -->
       <div class="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
-        <span class="text-outline">Quick test:</span>
+        <span class="text-outline">Quick test scenarios:</span>
         <button onclick="loadSample('python_security')" class="px-2 py-0.5 rounded bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary border border-border-subtle transition-colors">
           🐍 Python SQLi
         </button>
@@ -365,94 +365,7 @@
         </div>
       </div>
 
-      <!-- TAB 2: Visual Diff & Fixes -->
-      <div id="tab-content-diff" class="hidden flex flex-col gap-3 flex-1">
-        <div class="flex items-center justify-between bg-surface-container p-2.5 rounded-lg border border-border-color">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px] text-secondary">compare</span>
-            <span class="text-xs font-semibold text-white">Interactive Code Diff Viewer</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="flex items-center bg-surface-container-lowest rounded p-0.5 border border-border-subtle">
-              <button id="diff-split-btn" class="px-2.5 py-1 rounded bg-surface-container-highest text-primary text-xs font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">splitscreen</span>
-                <span>Split</span>
-              </button>
-              <button id="diff-unified-btn" class="px-2.5 py-1 rounded text-on-surface-variant text-xs flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">view_stream</span>
-                <span>Unified</span>
-              </button>
-            </div>
-            <button id="btn-copy-refactored" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-black text-on-surface text-xs font-medium flex items-center gap-1 transition-colors">
-              <span class="material-symbols-outlined text-[14px]">content_copy</span>
-              <span>Copy Fix</span>
-            </button>
-          </div>
-        </div>
-
-        <div id="diff-render-container" class="flex-1 overflow-x-auto min-h-[460px]">
-          <!-- Rendered dynamically -->
-        </div>
-      </div>
-
-      <!-- TAB 3: Security & OWASP Matrix -->
-      <div id="tab-content-security" class="hidden flex flex-col gap-3 flex-1">
-        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px] text-danger">shield</span>
-            <span class="text-xs font-semibold text-white">OWASP Top 10 & CWE Security Matrix</span>
-          </div>
-          <span class="text-xs text-outline font-mono">Automated Threat Modeling</span>
-        </div>
-
-        <div id="security-matrix-container" class="flex flex-col gap-2.5 overflow-y-auto max-h-[560px]">
-          <!-- Security checks populated dynamically -->
-        </div>
-      </div>
-
-      <!-- TAB 4: Generated Unit Tests -->
-      <div id="tab-content-tests" class="hidden flex flex-col gap-3 flex-1">
-        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px] text-info">science</span>
-            <span class="text-xs font-semibold text-white">Automated Regression & Vulnerability Test Suite</span>
-          </div>
-          <button onclick="navigator.clipboard.writeText(document.getElementById('generated-tests-code').textContent); showToast('Copied unit tests!', 'success');" class="px-2 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
-            <span class="material-symbols-outlined text-[14px]">content_copy</span>
-            <span>Copy Tests</span>
-          </button>
-        </div>
-
-        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
-          <pre id="generated-tests-code"><code>// Run AI Review to generate automated unit tests targeting the discovered edge cases.</code></pre>
-        </div>
-      </div>
-
-      <!-- TAB 5: Export PR Markdown -->
-      <div id="tab-content-export" class="hidden flex flex-col gap-3 flex-1">
-        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[18px] text-primary">ios_share</span>
-            <span class="text-xs font-semibold text-white">Pull Request & CI/CD Review Summary</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="btn-copy-pr-comment" class="px-2.5 py-1 rounded bg-primary text-black text-xs font-semibold flex items-center gap-1 hover:bg-primary-light transition-colors">
-              <span class="material-symbols-outlined text-[14px]">content_copy</span>
-              <span>Copy for GitHub PR</span>
-            </button>
-            <button id="btn-export-markdown" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
-              <span class="material-symbols-outlined text-[14px]">download</span>
-              <span>Download .md</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
-          <pre id="export-markdown-preview"><code>// Markdown report will appear here once an analysis completes.</code></pre>
-        </div>
-      </div>
-
-      <!-- TAB: AI Dual-Logic Code Generator -->
+      <!-- TAB 2: AI Dual-Logic Code Generator -->
       <div id="tab-content-generator" class="hidden flex flex-col gap-4 flex-1">
         <!-- Generator Hero Banner -->
         <div class="p-4 rounded-xl bg-surface-container border border-border-color shadow-sm flex flex-col gap-3">
@@ -504,7 +417,7 @@
               </select>
 
               <!-- Generate Button -->
-              <button id="btn-run-generate" class="h-10 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 shrink-0 transition-all transform active:scale-95">
+              <button id="btn-run-generate" onclick="runCodeGeneration()" class="h-10 px-4 rounded-lg bg-primary hover:bg-primary-light text-black text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 shrink-0 transition-all transform active:scale-95">
                 <span class="material-symbols-outlined text-[17px]">auto_awesome</span>
                 <span id="btn-run-generate-text">Generate Code</span>
               </button>
@@ -528,15 +441,15 @@
         <!-- View Switcher & Topic Status -->
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div class="flex items-center gap-1 bg-surface-container rounded-lg p-0.5 border border-border-subtle text-xs">
-            <button id="gen-view-split" class="px-3 py-1 rounded bg-surface-container-high text-primary font-semibold flex items-center gap-1.5 transition-colors">
+            <button id="gen-view-split" onclick="setGeneratorViewMode('split')" class="px-3 py-1 rounded bg-surface-container-high text-primary font-semibold flex items-center gap-1.5 transition-colors">
               <span class="material-symbols-outlined text-[15px]">splitscreen</span>
               <span>Compare Side-by-Side</span>
             </button>
-            <button id="gen-view-easy" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+            <button id="gen-view-easy" onclick="setGeneratorViewMode('easy')" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
               <span class="w-2 h-2 rounded-full bg-secondary"></span>
               <span>Easy Logic Only</span>
             </button>
-            <button id="gen-view-hard" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
+            <button id="gen-view-hard" onclick="setGeneratorViewMode('hard')" class="px-3 py-1 rounded text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors">
               <span class="w-2 h-2 rounded-full bg-danger"></span>
               <span>Hard Logic Only</span>
             </button>
@@ -659,6 +572,93 @@
         </div>
       </div>
 
+      <!-- TAB 3: Visual Diff & Fixes -->
+      <div id="tab-content-diff" class="hidden flex flex-col gap-3 flex-1">
+        <div class="flex items-center justify-between bg-surface-container p-2.5 rounded-lg border border-border-color">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-secondary">compare</span>
+            <span class="text-xs font-semibold text-white">Interactive Code Diff Viewer</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center bg-surface-container-lowest rounded p-0.5 border border-border-subtle">
+              <button id="diff-split-btn" class="px-2.5 py-1 rounded bg-surface-container-highest text-primary text-xs font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">splitscreen</span>
+                <span>Split</span>
+              </button>
+              <button id="diff-unified-btn" class="px-2.5 py-1 rounded text-on-surface-variant text-xs flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">view_stream</span>
+                <span>Unified</span>
+              </button>
+            </div>
+            <button id="btn-copy-refactored" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-black text-on-surface text-xs font-medium flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Copy Fix</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="diff-render-container" class="flex-1 overflow-x-auto min-h-[460px]">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 4: Security & OWASP Matrix -->
+      <div id="tab-content-security" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-danger">shield</span>
+            <span class="text-xs font-semibold text-white">OWASP Top 10 & CWE Security Matrix</span>
+          </div>
+          <span class="text-xs text-outline font-mono">Automated Threat Modeling</span>
+        </div>
+
+        <div id="security-matrix-container" class="flex flex-col gap-2.5 overflow-y-auto max-h-[560px]">
+          <!-- Security checks populated dynamically -->
+        </div>
+      </div>
+
+      <!-- TAB 5: Generated Unit Tests -->
+      <div id="tab-content-tests" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-info">science</span>
+            <span class="text-xs font-semibold text-white">Automated Regression & Vulnerability Test Suite</span>
+          </div>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('generated-tests-code').textContent); showToast('Copied unit tests!', 'success');" class="px-2 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">content_copy</span>
+            <span>Copy Tests</span>
+          </button>
+        </div>
+
+        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
+          <pre id="generated-tests-code"><code>// Run AI Review to generate automated unit tests targeting the discovered edge cases.</code></pre>
+        </div>
+      </div>
+
+      <!-- TAB 6: Export PR Markdown -->
+      <div id="tab-content-export" class="hidden flex flex-col gap-3 flex-1">
+        <div class="p-3 bg-surface-container rounded-lg border border-border-color flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px] text-primary">ios_share</span>
+            <span class="text-xs font-semibold text-white">Pull Request & CI/CD Review Summary</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-copy-pr-comment" class="px-2.5 py-1 rounded bg-primary text-black text-xs font-semibold flex items-center gap-1 hover:bg-primary-light transition-colors">
+              <span class="material-symbols-outlined text-[14px]">content_copy</span>
+              <span>Copy for GitHub PR</span>
+            </button>
+            <button id="btn-export-markdown" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">download</span>
+              <span>Download .md</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface-container-lowest p-4 rounded-lg border border-border-color font-mono text-xs overflow-x-auto text-on-surface flex-1 min-h-[460px]">
+          <pre id="export-markdown-preview"><code>// Markdown report will appear here once an analysis completes.</code></pre>
+        </div>
+      </div>
+
       <!-- Loading State Overlay -->
       <div id="analysis-loading-overlay" class="hidden absolute inset-0 bg-background/80 backdrop-blur-sm z-30 rounded-xl flex flex-col items-center justify-center gap-3">
         <div class="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin"></div>
@@ -676,9 +676,9 @@
       <div class="px-5 py-4 bg-surface-container border-b border-border-color flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-[20px] text-primary">tune</span>
-          <h3 class="text-sm font-bold text-white">AI Engine & Workspace Configuration</h3>
+          <h3 class="text-sm font-bold text-white">AI Engine & API Key Setup</h3>
         </div>
-        <button id="btn-close-settings" class="text-outline hover:text-white p-1 rounded hover:bg-surface-container-high transition-colors">
+        <button onclick="closeSettingsModal()" class="text-outline hover:text-white p-1 rounded hover:bg-surface-container-high transition-colors">
           <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>

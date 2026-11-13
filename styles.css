@@ -1,4 +1,7 @@
-/* CodePulse AI - Obsidian Precision Theme */
+/* ==========================================================================
+   CodePulse AI — Obsidian Precision Dark Theme
+   ========================================================================== */
+
 :root {
   --bg-primary: #0a0e16;
   --bg-surface: #0f131c;
@@ -13,13 +16,13 @@
   --text-muted: #626d84;
   --primary: #a78bfa;
   --primary-light: #c4b5fd;
-  --primary-glow: rgba(167, 139, 250, 0.15);
+  --primary-glow: rgba(167, 139, 250, 0.2);
   --success: #34d399;
-  --success-glow: rgba(52, 211, 153, 0.15);
+  --success-glow: rgba(52, 211, 153, 0.2);
   --warning: #fbbf24;
-  --warning-glow: rgba(251, 191, 36, 0.15);
+  --warning-glow: rgba(251, 191, 36, 0.2);
   --danger: #f87171;
-  --danger-glow: rgba(248, 113, 113, 0.15);
+  --danger-glow: rgba(248, 113, 113, 0.2);
   --info: #38bdf8;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -162,11 +165,6 @@ body {
   color: #f87171;
 }
 
-.diff-mod {
-  background-color: rgba(251, 191, 36, 0.08) !important;
-  color: #fde68a;
-}
-
 /* Score Pill Gauges */
 .score-badge {
   display: inline-flex;
@@ -236,70 +234,6 @@ body {
 
 .issue-card.severity-style {
   border-left: 3px solid var(--primary);
-}
-
-/* Pulse Glow Effects */
-.glow-primary {
-  box-shadow: 0 0 20px -3px var(--primary-glow);
-}
-
-.glow-success {
-  box-shadow: 0 0 20px -3px var(--success-glow);
-}
-
-.glow-danger {
-  box-shadow: 0 0 20px -3px var(--danger-glow);
-}
-
-/* Modal animation */
-.modal-overlay {
-  animation: fadeIn 0.15s ease-out;
-}
-.modal-box {
-  animation: slideUp 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(12px) scale(0.98); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-/* Toast Notifications */
-#toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  pointer-events: none;
-}
-
-.toast {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: 8px;
-  background-color: var(--bg-surface-high);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  font-size: 13.5px;
-  animation: toastIn 0.2s ease-out;
-  max-width: 420px;
-}
-
-@keyframes toastIn {
-  from { transform: translateY(16px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
 
 /* Generator & Logic Badges */
@@ -376,4 +310,55 @@ body {
   50% {
     box-shadow: 0 0 0 4px rgba(167, 139, 250, 0);
   }
+}
+
+/* Modal animation */
+.modal-overlay {
+  animation: fadeIn 0.15s ease-out;
+}
+.modal-box {
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(12px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background-color: var(--bg-surface-high);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 13.5px;
+  animation: toastIn 0.2s ease-out;
+  max-width: 420px;
+}
+
+@keyframes toastIn {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }

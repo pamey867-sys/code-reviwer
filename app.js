@@ -1,6 +1,6 @@
 /**
- * CodePulse AI - Interactive AI Code Reviewer Engine
- * Dual-Mode: Google Gemini AI + Offline Heuristic Static Analyzer
+ * CodePulse AI — Interactive AI Code Reviewer & Dual-Logic Generator
+ * Dual-Engine: Google Gemini AI + Offline Heuristic Static Engine
  */
 
 // Application State
@@ -226,9 +226,11 @@ public class ReportGenerator {
   }
 };
 
-// Initialize Application on DOM Ready or immediately if already loaded
+// =============================================================
+// Application Initialization
+// =============================================================
 function initApp() {
-  // Expose global action functions to window for inline HTML onclick handlers
+  // Expose global action functions on window for inline HTML onclick handlers
   window.switchTab = switchTab;
   window.loadSample = loadSample;
   window.closeSettingsModal = closeSettingsModal;
@@ -255,11 +257,12 @@ if (document.readyState === 'loading') {
   initApp();
 }
 
-// Setup Code Editor and Line Numbers
+// =============================================================
+// Code Editor Setup
+// =============================================================
 function setupEditor() {
   const textarea = document.getElementById('code-input');
   const lineNumbers = document.getElementById('line-numbers');
-
   if (!textarea || !lineNumbers) return;
 
   function updateLineNumbers() {
@@ -293,7 +296,7 @@ function setupEditor() {
 }
 
 function updateEditorStats() {
-  const code = document.getElementById('code-input').value;
+  const code = document.getElementById('code-input')?.value || '';
   const lines = code ? code.split('\n').length : 0;
   const chars = code.length;
   const words = code.trim() ? code.trim().split(/\s+/).length : 0;
@@ -304,12 +307,14 @@ function updateEditorStats() {
   }
 }
 
+// =============================================================
 // Event Listeners Setup
+// =============================================================
 function setupEventListeners() {
   // Analyze Button
   document.getElementById('btn-analyze')?.addEventListener('click', runAnalysis);
 
-  // Tab Navigation
+  // Tab Navigation Buttons
   document.querySelectorAll('[data-tab]').forEach(tabBtn => {
     tabBtn.addEventListener('click', () => {
       switchTab(tabBtn.dataset.tab);
@@ -338,9 +343,70 @@ function setupEventListeners() {
   // Clear Code Button
   document.getElementById('btn-clear')?.addEventListener('click', () => {
     const textarea = document.getElementById('code-input');
-    textarea.value = '';
-    textarea.dispatchEvent(new Event('input'));
-    showToast('Editor cleared', 'info');
+    if (textarea) {
+      textarea.value = '';
+      textarea.dispatchEvent(new Event('input'));
+      showToast('Editor cleared', 'info');
+    }
+  });
+
+  // Direct Quick Generator Panel Listeners
+  document.getElementById('btn-quick-gen-easy')?.addEventListener('click', () => runQuickGeneration('easy'));
+  document.getElementById('btn-quick-gen-hard')?.addEventListener('click', () => runQuickGeneration('hard'));
+  document.getElementById('quick-gen-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runQuickGeneration('hard');
+    }
+  });
+  document.querySelectorAll('.quick-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.q;
+      const input = document.getElementById('quick-gen-input');
+      if (input && q) {
+        input.value = q;
+        runQuickGeneration('hard');
+      }
+    });
+  });
+
+  // Full Generator Tab Execution Listeners
+  document.getElementById('btn-run-generate')?.addEventListener('click', runCodeGeneration);
+  document.getElementById('gen-prompt-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runCodeGeneration();
+    }
+  });
+
+  // Generator Inspiration Chips
+  document.querySelectorAll('.prompt-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const prompt = chip.dataset.prompt;
+      const input = document.getElementById('gen-prompt-input');
+      if (input && prompt) {
+        input.value = prompt;
+        runCodeGeneration();
+      }
+    });
+  });
+
+  // Generator View Modes (Split / Easy / Hard)
+  document.getElementById('gen-view-split')?.addEventListener('click', () => setGeneratorViewMode('split'));
+  document.getElementById('gen-view-easy')?.addEventListener('click', () => setGeneratorViewMode('easy'));
+  document.getElementById('gen-view-hard')?.addEventListener('click', () => setGeneratorViewMode('hard'));
+
+  // Dedicated Add API Key Header Button
+  document.getElementById('btn-header-api-key')?.addEventListener('click', openApiKeyModal);
+
+  // Quick Open Generator Button
+  document.getElementById('btn-header-generate')?.addEventListener('click', () => {
+    switchTab('generator');
+    setTimeout(() => document.getElementById('gen-prompt-input')?.focus(), 150);
+  });
+  document.getElementById('btn-quick-generate')?.addEventListener('click', () => {
+    switchTab('generator');
+    setTimeout(() => document.getElementById('gen-prompt-input')?.focus(), 150);
   });
 
   // File Upload Drag & Drop & Input
@@ -381,65 +447,6 @@ function setupEventListeners() {
   document.getElementById('btn-save-settings')?.addEventListener('click', saveSettings);
   document.getElementById('btn-test-key')?.addEventListener('click', testGeminiApiKey);
 
-  // Dedicated Add API Key Header Button
-  document.getElementById('btn-header-api-key')?.addEventListener('click', openApiKeyModal);
-
-  // Header & Quick Generator Openers
-  document.getElementById('btn-header-generate')?.addEventListener('click', () => {
-    switchTab('generator');
-    setTimeout(() => document.getElementById('gen-prompt-input')?.focus(), 150);
-  });
-  document.getElementById('btn-quick-generate')?.addEventListener('click', () => {
-    switchTab('generator');
-    setTimeout(() => document.getElementById('gen-prompt-input')?.focus(), 150);
-  });
-
-  // Direct Quick Generator Panel Listeners
-  document.getElementById('btn-quick-gen-easy')?.addEventListener('click', () => runQuickGeneration('easy'));
-  document.getElementById('btn-quick-gen-hard')?.addEventListener('click', () => runQuickGeneration('hard'));
-  document.getElementById('quick-gen-input')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      runQuickGeneration('hard');
-    }
-  });
-  document.querySelectorAll('.quick-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const q = chip.dataset.q;
-      const input = document.getElementById('quick-gen-input');
-      if (input && q) {
-        input.value = q;
-        runQuickGeneration('hard');
-      }
-    });
-  });
-
-  // Code Generator Execution
-  document.getElementById('btn-run-generate')?.addEventListener('click', runCodeGeneration);
-  document.getElementById('gen-prompt-input')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      runCodeGeneration();
-    }
-  });
-
-  // Prompt Inspiration Chips
-  document.querySelectorAll('.prompt-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const prompt = chip.dataset.prompt;
-      const input = document.getElementById('gen-prompt-input');
-      if (input && prompt) {
-        input.value = prompt;
-        runCodeGeneration();
-      }
-    });
-  });
-
-  // Generator View Modes
-  document.getElementById('gen-view-split')?.addEventListener('click', () => setGeneratorViewMode('split'));
-  document.getElementById('gen-view-easy')?.addEventListener('click', () => setGeneratorViewMode('easy'));
-  document.getElementById('gen-view-hard')?.addEventListener('click', () => setGeneratorViewMode('hard'));
-
   // Copy & Export Buttons
   document.getElementById('btn-copy-refactored')?.addEventListener('click', () => {
     if (state.reviewResults?.refactoredCode) {
@@ -451,10 +458,12 @@ function setupEventListeners() {
   document.getElementById('btn-apply-all-fixes')?.addEventListener('click', () => {
     if (state.reviewResults?.refactoredCode) {
       const textarea = document.getElementById('code-input');
-      textarea.value = state.reviewResults.refactoredCode;
-      textarea.dispatchEvent(new Event('input'));
-      switchTab('review');
-      showToast('Applied AI refactored code to editor!', 'success');
+      if (textarea) {
+        textarea.value = state.reviewResults.refactoredCode;
+        textarea.dispatchEvent(new Event('input'));
+        switchTab('review');
+        showToast('Applied AI refactored code to editor!', 'success');
+      }
     }
   });
 
@@ -471,10 +480,11 @@ function handleUploadedFile(file) {
   reader.onload = (e) => {
     const content = e.target.result;
     const textarea = document.getElementById('code-input');
-    textarea.value = content;
-    textarea.dispatchEvent(new Event('input'));
+    if (textarea) {
+      textarea.value = content;
+      textarea.dispatchEvent(new Event('input'));
+    }
 
-    // Detect language from extension
     const ext = file.name.split('.').pop().toLowerCase();
     const langMap = {
       js: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript',
@@ -483,7 +493,8 @@ function handleUploadedFile(file) {
     };
     if (langMap[ext]) {
       state.currentLanguage = langMap[ext];
-      document.getElementById('language-selector').value = langMap[ext];
+      const langSelect = document.getElementById('language-selector');
+      if (langSelect) langSelect.value = langMap[ext];
     }
     showToast(`Loaded ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'success');
   };
@@ -495,8 +506,10 @@ function loadSample(key) {
   if (!sample) return;
 
   const textarea = document.getElementById('code-input');
-  textarea.value = sample.code;
-  textarea.dispatchEvent(new Event('input'));
+  if (textarea) {
+    textarea.value = sample.code;
+    textarea.dispatchEvent(new Event('input'));
+  }
 
   state.currentLanguage = sample.language;
   const langSelect = document.getElementById('language-selector');
@@ -505,10 +518,12 @@ function loadSample(key) {
   const sampleSelect = document.getElementById('sample-selector');
   if (sampleSelect) sampleSelect.value = key;
 
-  showToast(`Loaded sample: ${sample.name}`, 'info');
+  showToast(`Loaded scenario: ${sample.name}`, 'info');
 }
 
+// =============================================================
 // Tab Switching
+// =============================================================
 function switchTab(tabId) {
   state.currentTab = tabId;
 
@@ -522,7 +537,15 @@ function switchTab(tabId) {
     }
   });
 
-  const tabContents = ['tab-content-review', 'tab-content-generator', 'tab-content-diff', 'tab-content-security', 'tab-content-tests', 'tab-content-export'];
+  const tabContents = [
+    'tab-content-review',
+    'tab-content-generator',
+    'tab-content-diff',
+    'tab-content-security',
+    'tab-content-tests',
+    'tab-content-export'
+  ];
+
   tabContents.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
@@ -531,7 +554,6 @@ function switchTab(tabId) {
   const activeContent = document.getElementById(`tab-content-${tabId}`);
   if (activeContent) activeContent.classList.remove('hidden');
 
-  // Trigger Prism highlighting or diff render if needed
   if (tabId === 'diff') renderDiffViewer();
 }
 
@@ -569,9 +591,12 @@ function setDiffMode(mode) {
   renderDiffViewer();
 }
 
-// Main Analysis Controller
+// =============================================================
+// Review Controller (Gemini API + Static Heuristics)
+// =============================================================
 async function runAnalysis() {
-  const code = document.getElementById('code-input').value.trim();
+  const textarea = document.getElementById('code-input');
+  const code = textarea?.value.trim() || '';
   if (!code) {
     showToast('Please paste or write some code to review first!', 'warning');
     return;
@@ -584,13 +609,11 @@ async function runAnalysis() {
     const modelToUse = state.selectedModel;
 
     if (modelToUse !== 'heuristic' && state.apiKey) {
-      // Run with live Gemini AI API
       updateAnalyzingStatus('Connecting to Google Gemini AI (' + modelToUse + ')...');
       result = await analyzeWithGemini(code, state.currentLanguage, state.apiKey, modelToUse, state.customRules);
     } else {
-      // Run with smart offline heuristic static analyzer
       updateAnalyzingStatus('Running Heuristic Static Code & Security Engine...');
-      await new Promise(r => setTimeout(r, 650)); // smooth natural feeling latency
+      await new Promise(r => setTimeout(r, 450));
       result = analyzeWithHeuristics(code, state.currentLanguage);
     }
 
@@ -599,8 +622,7 @@ async function runAnalysis() {
     showToast('Analysis completed successfully!', 'success');
   } catch (err) {
     console.error('Analysis error:', err);
-    showToast(`AI Analysis Error: ${err.message}. Falling back to Heuristic Engine.`, 'danger');
-    // Fallback automatically to heuristic engine so user is never blocked
+    showToast(`AI Analysis Notice: ${err.message}. Using Heuristic Engine fallback.`, 'info');
     const fallback = analyzeWithHeuristics(code, state.currentLanguage);
     state.reviewResults = fallback;
     renderAnalysisResults(fallback);
@@ -632,16 +654,13 @@ function updateAnalyzingStatus(msg) {
   if (statusEl) statusEl.textContent = msg;
 }
 
-// -------------------------------------------------------------
 // Live Gemini API Client
-// -------------------------------------------------------------
 async function analyzeWithGemini(code, language, apiKey, model, customRules) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const systemInstruction = `You are an elite Principal Software Engineer, Staff Security Auditor, and Systems Architect.
 Review the provided ${language} source code with extreme rigor.
-You MUST output valid, parseable JSON conforming EXACTLY to the following schema:
-
+Output valid, parseable JSON conforming EXACTLY to this schema:
 {
   "summary": "Executive summary of code quality, architecture, safety, and critical flaws (2-3 sentences)",
   "verdict": "CRITICAL_BLOCKER" | "CHANGES_REQUESTED" | "APPROVED",
@@ -657,29 +676,26 @@ You MUST output valid, parseable JSON conforming EXACTLY to the following schema
       "id": "ISS-1",
       "severity": "critical" | "warning" | "optimization" | "style",
       "category": "Security" | "Bug" | "Performance" | "Maintainability",
-      "line": number (line number where the issue occurs, or 1),
+      "line": number,
       "title": "Concise issue title",
-      "snippet": "Vulnerable or problematic code line",
-      "explanation": "Clear explanation of why this is harmful, edge cases, and attack vectors if applicable",
+      "snippet": "Vulnerable code line",
+      "explanation": "Clear explanation of flaw, attack vector, or performance hazard",
       "recommendation": "Concrete advice to fix",
-      "suggestedFix": "Single-line or multi-line replacement fix"
+      "suggestedFix": "Corrected code snippet"
     }
   ],
   "refactoredCode": "The complete, optimized, cleaned, production-ready replacement code with all issues fixed.",
-  "unitTests": "Comprehensive unit tests (using appropriate testing framework e.g. Jest, PyTest, Go test, JUnit) verifying happy path and vulnerability regression.",
+  "unitTests": "Comprehensive unit tests verifying happy path and vulnerability regression.",
   "securityMatrix": [
     {
-      "cwe": "CWE-ID or None",
-      "name": "Vulnerability or Security Check Name",
+      "cwe": "CWE-ID",
+      "name": "Security Check Name",
       "status": "Passed" | "Failed" | "Warning",
       "mitigation": "Remediation note"
     }
   ]
 }
-
-Strict Rules:
-- Return ONLY the JSON object. Do NOT wrap in markdown quotes if possible, or wrap cleanly in \`\`\`json.
-- Adhere to custom rules: ${customRules}`;
+Adhere to custom rules: ${customRules}`;
 
   const payload = {
     contents: [
@@ -704,9 +720,7 @@ Strict Rules:
 
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
 
@@ -717,9 +731,8 @@ Strict Rules:
 
   const data = await response.json();
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) throw new Error("No response content generated by Gemini.");
+  if (!rawText) throw new Error("No response generated by Gemini.");
 
-  // Parse JSON with robust cleaning
   let cleanJson = rawText.trim();
   if (cleanJson.startsWith('```json')) {
     cleanJson = cleanJson.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
@@ -730,9 +743,7 @@ Strict Rules:
   return JSON.parse(cleanJson);
 }
 
-// -------------------------------------------------------------
-// Smart Heuristic Static Analysis Engine (Zero-Config / Free)
-// -------------------------------------------------------------
+// Built-in Static Heuristic Engine (100% Offline / Free)
 function analyzeWithHeuristics(code, language) {
   const lines = code.split('\n');
   const issues = [];
@@ -742,7 +753,7 @@ function analyzeWithHeuristics(code, language) {
   let perfScore = 92;
   let maintScore = 90;
 
-  // Rule 1: SQL Injection Detection
+  // Rule 1: SQL Injection
   lines.forEach((line, idx) => {
     const lineNum = idx + 1;
     if (
@@ -756,7 +767,7 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Critical SQL Injection (CWE-89)',
         snippet: line.trim(),
-        explanation: 'Dynamic string concatenation or formatting inside an SQL statement allows arbitrary query manipulation, bypass of authentication, and full database extraction.',
+        explanation: 'Dynamic string concatenation or formatting inside an SQL statement allows arbitrary query manipulation, authentication bypass, and database extraction.',
         recommendation: 'Use parameterized queries or prepared statements instead of string concatenation.',
         suggestedFix: language === 'python'
           ? 'cursor.execute("SELECT id, username, email FROM users WHERE username = ? AND role = ?", (username, role))'
@@ -767,7 +778,7 @@ function analyzeWithHeuristics(code, language) {
     }
   });
 
-  // Rule 2: Hardcoded Secrets / Tokens
+  // Rule 2: Hardcoded Secrets
   lines.forEach((line, idx) => {
     const lineNum = idx + 1;
     if (/(secret|api_?key|password|jwt_secret|private_?key|token)\s*[:=]\s*['"][a-zA-Z0-9_\-\.]{8,}['"]/i.test(line) && !/process\.env|os\.environ|getenv|System\.getenv/i.test(line)) {
@@ -779,7 +790,7 @@ function analyzeWithHeuristics(code, language) {
         title: 'Hardcoded Secret / Credential (CWE-798)',
         snippet: line.trim(),
         explanation: 'Credentials stored directly in source code can easily be committed to version control and leaked to unauthorized parties.',
-        recommendation: 'Move credentials into environment variables or a secure secret manager (e.g., Vault, AWS Secrets Manager).',
+        recommendation: 'Move credentials into environment variables or a secure secret manager (e.g. Vault, AWS Secrets Manager).',
         suggestedFix: language === 'python'
           ? 'API_KEY = os.getenv("APP_API_KEY")'
           : 'const API_KEY = process.env.APP_API_KEY;'
@@ -789,7 +800,7 @@ function analyzeWithHeuristics(code, language) {
     }
   });
 
-  // Rule 3: Memory / Resource Leak (Unclosed Connections or Listeners)
+  // Rule 3: Resource Leaks
   lines.forEach((line, idx) => {
     const lineNum = idx + 1;
     if (/addEventListener\(/i.test(line) && !code.includes('removeEventListener')) {
@@ -800,7 +811,7 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Missing Event Listener Cleanup (Memory Leak)',
         snippet: line.trim(),
-        explanation: 'Event listener added in an effect without a corresponding removeEventListener cleanup function leads to accumulated listeners across component lifecycles.',
+        explanation: 'Event listener registered without a corresponding cleanup function causes memory leaks across component lifecycles.',
         recommendation: 'Return a cleanup function that invokes removeEventListener.',
         suggestedFix: 'return () => window.removeEventListener("resize", handleResize);'
       });
@@ -816,7 +827,7 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Unmanaged Resource Handle / File Leak',
         snippet: line.trim(),
-        explanation: 'Opening file or database handles without automatic context management or finally blocks will leak file descriptors on exceptions.',
+        explanation: 'Opening file or database handles without automatic context management or finally blocks will leak file descriptors.',
         recommendation: 'Use "with" statement (Python) or try-with-resources (Java) to ensure guaranteed closure.',
         suggestedFix: language === 'python' ? 'with sqlite3.connect(DB_FILE) as conn:' : 'try (FileInputStream fis = new FileInputStream(file)) {'
       });
@@ -825,7 +836,7 @@ function analyzeWithHeuristics(code, language) {
     }
   });
 
-  // Rule 4: Concurrency / Async issues
+  // Rule 4: Concurrency & Async
   lines.forEach((line, idx) => {
     const lineNum = idx + 1;
     if (/make\(chan [a-zA-Z0-9]+\)/i.test(line) && code.includes('time.After')) {
@@ -836,8 +847,8 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Goroutine Leak on Unbuffered Channel',
         snippet: line.trim(),
-        explanation: 'Sending to an unbuffered channel in a goroutine when a select timeout fires causes the sender goroutine to block indefinitely and leak memory.',
-        recommendation: 'Create a buffered channel `ch := make(chan string, 1)` to allow the sender to exit without blocking.',
+        explanation: 'Sending to an unbuffered channel in a goroutine when a select timeout fires causes the sender goroutine to block forever.',
+        recommendation: 'Create a buffered channel `ch := make(chan string, 1)` to allow sender exit.',
         suggestedFix: 'ch := make(chan string, 1)'
       });
       scorePenalty += 22;
@@ -852,8 +863,8 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Unhandled Async Rejection / Missing Error Boundary',
         snippet: line.trim(),
-        explanation: 'Async request handlers without try/catch blocks risk throwing unhandled promise rejections that can terminate or stall the Node process.',
-        recommendation: 'Wrap async operations in a try/catch block and return an appropriate HTTP 500 status on failure.',
+        explanation: 'Async request handlers without try/catch blocks risk throwing unhandled promise rejections that can terminate processes.',
+        recommendation: 'Wrap async operations in a try/catch block and return an appropriate HTTP status on failure.',
         suggestedFix: 'try { /* async logic */ } catch (error) { res.status(500).json({ error: error.message }); }'
       });
       scorePenalty += 10;
@@ -872,7 +883,7 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Direct State Mutation Anti-Pattern',
         snippet: line.trim(),
-        explanation: 'Directly mutating React state arrays with .push() avoids creating a new object reference, which breaks change detection and prevents UI updates.',
+        explanation: 'Directly mutating React state arrays with .push() avoids creating a new object reference, which breaks change detection.',
         recommendation: 'Use immutable array spreads: `setUsers(prev => [...prev, newUser])`.',
         suggestedFix: 'setUsers(prev => [...prev, { id: Date.now(), name }]);'
       });
@@ -888,7 +899,7 @@ function analyzeWithHeuristics(code, language) {
         line: lineNum,
         title: 'Sensitive Credential Log Exposure',
         snippet: line.trim(),
-        explanation: 'Logging authentication tokens or user credentials exposes confidential auth data in production log aggregators and terminal history.',
+        explanation: 'Logging authentication tokens or user credentials exposes confidential auth data in production log aggregators.',
         recommendation: 'Remove debugging logs before deploying or mask the secret token.',
         suggestedFix: '// logger.debug("Token received, length: " + token?.length);'
       });
@@ -897,8 +908,7 @@ function analyzeWithHeuristics(code, language) {
     }
   });
 
-  // Calculate scores
-  const finalScore = Math.max(22, 100 - scorePenalty);
+  const finalScore = Math.max(25, 100 - scorePenalty);
   let grade = 'A+';
   if (finalScore < 60) grade = 'F';
   else if (finalScore < 70) grade = 'D';
@@ -910,7 +920,6 @@ function analyzeWithHeuristics(code, language) {
   if (issues.some(i => i.severity === 'critical')) verdict = 'CRITICAL_BLOCKER';
   else if (issues.length > 0) verdict = 'CHANGES_REQUESTED';
 
-  // Build Security Matrix
   securityMatrix.push({
     cwe: 'CWE-89',
     name: 'SQL Injection Vulnerability',
@@ -936,7 +945,6 @@ function analyzeWithHeuristics(code, language) {
     mitigation: 'Filter and mask bearer tokens and sensitive payloads.'
   });
 
-  // Generate Refactored Code with Applied Fixes
   let refactored = code;
   issues.forEach(iss => {
     if (iss.suggestedFix && iss.snippet) {
@@ -944,17 +952,14 @@ function analyzeWithHeuristics(code, language) {
     }
   });
 
-  // If no automated regex replace succeeded, provide an elegant refactor
   if (refactored === code && issues.length > 0) {
     refactored = `// AI Refactored & Hardened Version (${language})\n` + code;
   }
 
-  // Generate Unit Tests
   const unitTests = generateSampleUnitTests(language, issues);
-
   const summary = issues.length === 0
-    ? 'Code looks clean, robust, and well-structured with no critical vulnerabilities or architectural flaws detected.'
-    : `Audit identified ${issues.length} potential issue(s), including ${issues.filter(i => i.severity === 'critical').length} critical security blocker(s). Immediate refactoring recommended to safeguard data integrity and memory stability.`;
+    ? 'Code looks clean, robust, and well-structured with no critical vulnerabilities detected.'
+    : `Audit identified ${issues.length} potential issue(s), including ${issues.filter(i => i.severity === 'critical').length} critical security blocker(s). Immediate refactoring recommended.`;
 
   return {
     summary,
@@ -982,7 +987,6 @@ from unittest.mock import MagicMock, patch
 def test_sql_injection_rejection():
     """Verify malicious SQL payloads are properly escaped and handled safely."""
     malicious_payload = "admin' OR '1'='1"
-    # Should not trigger arbitrary SQL execution
     assert "'" in malicious_payload
 
 def test_resource_cleanup():
@@ -990,7 +994,6 @@ def test_resource_cleanup():
     with patch("sqlite3.connect") as mock_connect:
         mock_conn = MagicMock()
         mock_connect.return_value.__enter__.return_value = mock_conn
-        # Test logic goes here
         assert True
 `;
   } else if (language === 'go') {
@@ -1002,7 +1005,6 @@ import (
 )
 
 func TestFetchUserData_TimeoutSafety(t *testing.T) {
-	// Ensure goroutines terminate cleanly within timeout limit
 	start := time.Now()
 	_, err := fetchUserData("test-user-id")
 	elapsed := time.Since(start)
@@ -1025,20 +1027,17 @@ describe('CodePulse AI Security & Correctness Suite', () => {
     const initialUsers = [{ id: 1, name: 'Alice' }];
     const updatedUsers = [...initialUsers, { id: 2, name: 'Bob' }];
     expect(updatedUsers.length).toBe(2);
-    expect(initialUsers.length).toBe(1); // Original array remains pristine
+    expect(initialUsers.length).toBe(1);
   });
 });
 `;
   }
 }
 
-// -------------------------------------------------------------
-// Rendering Results to UI
-// -------------------------------------------------------------
+// Render Results to UI
 function renderAnalysisResults(res) {
   if (!res) return;
 
-  // 1. Update Scores & Grade
   const gradeBadge = document.getElementById('grade-badge');
   if (gradeBadge) {
     gradeBadge.textContent = res.scores.grade;
@@ -1050,13 +1049,11 @@ function renderAnalysisResults(res) {
   document.getElementById('score-perf-text')?.replaceChildren(document.createTextNode(`${res.scores.performance}%`));
   document.getElementById('score-maint-text')?.replaceChildren(document.createTextNode(`${res.scores.maintainability}%`));
 
-  // Progress bars
   document.getElementById('score-overall-bar')?.style.setProperty('width', `${res.scores.overall}%`);
   document.getElementById('score-security-bar')?.style.setProperty('width', `${res.scores.security}%`);
   document.getElementById('score-perf-bar')?.style.setProperty('width', `${res.scores.performance}%`);
   document.getElementById('score-maint-bar')?.style.setProperty('width', `${res.scores.maintainability}%`);
 
-  // 2. Verdict Banner
   const verdictBanner = document.getElementById('verdict-banner');
   if (verdictBanner) {
     let icon = 'task_alt';
@@ -1083,11 +1080,9 @@ function renderAnalysisResults(res) {
     `;
   }
 
-  // 3. Summary Text
   const summaryEl = document.getElementById('review-summary-text');
   if (summaryEl) summaryEl.textContent = res.summary;
 
-  // 4. Update Filter counts
   const criticalCount = res.issues.filter(i => i.severity === 'critical').length;
   const warningCount = res.issues.filter(i => i.severity === 'warning').length;
   const optCount = res.issues.filter(i => i.severity === 'optimization').length;
@@ -1097,20 +1092,13 @@ function renderAnalysisResults(res) {
   document.getElementById('count-warning')?.replaceChildren(document.createTextNode(warningCount));
   document.getElementById('count-optimization')?.replaceChildren(document.createTextNode(optCount));
 
-  // 5. Render Issues
   renderIssuesList();
-
-  // 6. Render Security Matrix Tab
   renderSecurityMatrix(res.securityMatrix || []);
 
-  // 7. Render Tests Tab
   const testBox = document.getElementById('generated-tests-code');
   if (testBox) testBox.textContent = res.unitTests || '// No unit tests generated.';
 
-  // 8. Render Diff
   renderDiffViewer();
-
-  // 9. Render Export PR Markdown
   renderExportMarkdown(res);
 }
 
@@ -1194,7 +1182,7 @@ window.applySingleFix = function(issueIndex) {
   if (!issue || !issue.suggestedFix) return;
 
   const textarea = document.getElementById('code-input');
-  if (issue.snippet && textarea.value.includes(issue.snippet)) {
+  if (textarea && issue.snippet && textarea.value.includes(issue.snippet)) {
     textarea.value = textarea.value.replace(issue.snippet, issue.suggestedFix);
     textarea.dispatchEvent(new Event('input'));
     showToast(`Applied fix for ${issue.title}`, 'success');
@@ -1203,14 +1191,12 @@ window.applySingleFix = function(issueIndex) {
   }
 };
 
-// -------------------------------------------------------------
-// Visual Diff Engine
-// -------------------------------------------------------------
+// Visual Diff Renderer
 function renderDiffViewer() {
   const container = document.getElementById('diff-render-container');
   if (!container) return;
 
-  const originalCode = document.getElementById('code-input').value;
+  const originalCode = document.getElementById('code-input')?.value || '';
   const refactoredCode = state.reviewResults?.refactoredCode || originalCode;
 
   if (originalCode === refactoredCode) {
@@ -1228,7 +1214,6 @@ function renderDiffViewer() {
   const refLines = refactoredCode.split('\n');
 
   if (state.diffMode === 'split') {
-    // Side by Side Split Diff
     let leftHtml = '';
     let rightHtml = '';
     const maxLines = Math.max(origLines.length, refLines.length);
@@ -1275,7 +1260,6 @@ function renderDiffViewer() {
       </div>
     `;
   } else {
-    // Unified Diff View
     let diffRows = '';
     const maxLines = Math.max(origLines.length, refLines.length);
 
@@ -1322,9 +1306,7 @@ function renderDiffViewer() {
   }
 }
 
-// -------------------------------------------------------------
-// Security Matrix Tab
-// -------------------------------------------------------------
+// Security Matrix
 function renderSecurityMatrix(matrix) {
   const container = document.getElementById('security-matrix-container');
   if (!container) return;
@@ -1358,15 +1340,11 @@ function renderSecurityMatrix(matrix) {
   }).join('');
 }
 
-// -------------------------------------------------------------
 // Export & Sharing
-// -------------------------------------------------------------
 function renderExportMarkdown(res) {
   const container = document.getElementById('export-markdown-preview');
   if (!container) return;
-
-  const md = generateMarkdownReport(res);
-  container.textContent = md;
+  container.textContent = generateMarkdownReport(res);
 }
 
 function generateMarkdownReport(res) {
@@ -1388,13 +1366,13 @@ ${res.issues.map(iss => `
 #### [${iss.severity.toUpperCase()}] ${iss.title} (Line ${iss.line})
 - **Category**: ${iss.category}
 - **Explanation**: ${iss.explanation}
-${iss.snippet ? `\`\`\`${state.currentLanguage}\n${iss.snippet}\n\`\`\`` : ''}
+${iss.snippet ? '```' + state.currentLanguage + '\n' + iss.snippet + '\n```' : ''}
 - **Recommended Fix**: ${iss.recommendation}
-${iss.suggestedFix ? `\`\`\`${state.currentLanguage}\n${iss.suggestedFix}\n\`\`\`` : ''}
+${iss.suggestedFix ? '```' + state.currentLanguage + '\n' + iss.suggestedFix + '\n```' : ''}
 `).join('\n')}
 
 ---
-*Generated by CodePulse AI Reviewer v2.5*
+*Generated by CodePulse AI Reviewer*
 `;
 }
 
@@ -1424,24 +1402,40 @@ function exportMarkdownReport() {
   showToast('Downloaded Markdown report!', 'success');
 }
 
-// -------------------------------------------------------------
-// Settings Modal
-// -------------------------------------------------------------
+// =============================================================
+// Settings Modal & API Key Management
+// =============================================================
 function openSettingsModal() {
   document.getElementById('settings-overlay')?.classList.remove('hidden');
-  document.getElementById('settings-api-key').value = state.apiKey;
-  document.getElementById('settings-model').value = state.selectedModel;
-  document.getElementById('settings-rules').value = state.customRules;
+  const keyInput = document.getElementById('settings-api-key');
+  const modelInput = document.getElementById('settings-model');
+  const rulesInput = document.getElementById('settings-rules');
+
+  if (keyInput) keyInput.value = state.apiKey;
+  if (modelInput) modelInput.value = state.selectedModel;
+  if (rulesInput) rulesInput.value = state.customRules;
 }
 
 function closeSettingsModal() {
   document.getElementById('settings-overlay')?.classList.add('hidden');
 }
 
+function openApiKeyModal() {
+  openSettingsModal();
+  setTimeout(() => {
+    const input = document.getElementById('settings-api-key');
+    if (input) {
+      input.focus();
+      input.classList.add('ring-2', 'ring-primary');
+      setTimeout(() => input.classList.remove('ring-2', 'ring-primary'), 1800);
+    }
+  }, 120);
+}
+
 function saveSettings() {
-  const key = document.getElementById('settings-api-key').value.trim();
-  const model = document.getElementById('settings-model').value;
-  const rules = document.getElementById('settings-rules').value.trim();
+  const key = document.getElementById('settings-api-key')?.value.trim() || '';
+  const model = document.getElementById('settings-model')?.value || 'gemini-2.5-flash';
+  const rules = document.getElementById('settings-rules')?.value.trim() || '';
 
   state.apiKey = key;
   state.selectedModel = model;
@@ -1462,16 +1456,17 @@ function loadStoredSettings() {
   updateApiKeyButton();
 }
 
-function openApiKeyModal() {
-  openSettingsModal();
-  setTimeout(() => {
-    const input = document.getElementById('settings-api-key');
-    if (input) {
-      input.focus();
-      input.classList.add('ring-2', 'ring-primary');
-      setTimeout(() => input.classList.remove('ring-2', 'ring-primary'), 1800);
+function updateModelStatusBadge() {
+  const badge = document.getElementById('engine-status-badge');
+  if (badge) {
+    if (state.apiKey && state.selectedModel !== 'heuristic') {
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary animate-pulse mr-1.5"></span> Gemini ${state.selectedModel.replace('gemini-', '')} (Live API)`;
+      badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary/15 text-secondary border border-secondary/30 flex items-center";
+    } else {
+      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary mr-1.5"></span> Heuristic Engine (Offline / Instant)`;
+      badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/30 flex items-center";
     }
-  }, 120);
+  }
 }
 
 function updateApiKeyButton() {
@@ -1490,22 +1485,9 @@ function updateApiKeyButton() {
   }
 }
 
-function updateModelStatusBadge() {
-  const badge = document.getElementById('engine-status-badge');
-  if (badge) {
-    if (state.apiKey && state.selectedModel !== 'heuristic') {
-      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary animate-pulse mr-1.5"></span> Gemini ${state.selectedModel.replace('gemini-', '')} (Live API)`;
-      badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary/15 text-secondary border border-secondary/30 flex items-center";
-    } else {
-      badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-primary mr-1.5"></span> Heuristic Engine (Offline / Instant)`;
-      badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/30 flex items-center";
-    }
-  }
-}
-
 async function testGeminiApiKey() {
-  const key = document.getElementById('settings-api-key').value.trim();
-  const model = document.getElementById('settings-model').value || 'gemini-2.5-flash';
+  const key = document.getElementById('settings-api-key')?.value.trim();
+  const model = document.getElementById('settings-model')?.value || 'gemini-2.5-flash';
 
   if (!key) {
     showToast('Please enter an API key to test.', 'warning');
@@ -1534,59 +1516,9 @@ async function testGeminiApiKey() {
   }
 }
 
-// -------------------------------------------------------------
-// Utilities
-// -------------------------------------------------------------
-function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-
-  const toast = document.createElement('div');
-  const typeStyles = {
-    info: 'border-info/40 text-info',
-    success: 'border-secondary/40 text-secondary',
-    warning: 'border-warning/40 text-warning',
-    danger: 'border-danger/40 text-danger'
-  }[type] || 'border-border-color text-on-surface';
-
-  const icons = {
-    info: 'info',
-    success: 'check_circle',
-    warning: 'warning',
-    danger: 'error'
-  }[type] || 'notifications';
-
-  toast.className = `toast ${typeStyles}`;
-  toast.innerHTML = `
-    <span class="material-symbols-outlined text-[18px] shrink-0">${icons}</span>
-    <span class="flex-1 text-xs text-on-surface font-medium">${escapeHtml(message)}</span>
-  `;
-
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(8px)';
-    toast.style.transition = 'all 0.2s ease-out';
-    setTimeout(() => toast.remove(), 200);
-  }, 3500);
-}
-
-function escapeHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 // =============================================================
 // AI Code Generator Engine (Dual-Logic: Easy & Hard)
 // =============================================================
-
-// Built-in High-Quality Logic Templates (for offline / instant mode)
 const GENERATOR_TEMPLATES = {
   lru_cache: {
     name: 'LRU Cache (Least Recently Used)',
@@ -1640,7 +1572,7 @@ export class SimpleLRUCache<K, V> {
     },
     hard: {
       title: 'High-Performance Doubly-Linked List LRU with TTL & Mutex Safety',
-      explanation: 'Production-grade doubly linked list with hash-map pointers for guaranteed O(1) node relocation. Features millisecond-resolution TTL (time-to-live) expiration, stats telemetry (hit/miss ratios), and concurrency guards.',
+      explanation: 'Production-grade doubly linked list with hash-map pointers for guaranteed O(1) node relocation. Features millisecond-resolution TTL (time-to-live) expiration, stats telemetry (hit/miss ratios), and capacity bounds.',
       complexity: 'Time: O(1) guaranteed · Space: O(N) with pointer overhead',
       code: `/**
  * Hard Logic: Production Doubly-Linked List LRU Cache with TTL Expiry
@@ -1678,7 +1610,6 @@ export class HardenedLRUCache<K, V> {
     this.lookup = new Map();
     this.stats = { hits: 0, misses: 0, evictions: 0, size: 0 };
 
-    // Sentinel dummy nodes to eliminate null pointer checks
     this.head = { key: null as any, value: null as any, expiresAt: 0, prev: null, next: null };
     this.tail = { key: null as any, value: null as any, expiresAt: 0, prev: null, next: null };
     this.head.next = this.tail;
@@ -1692,7 +1623,6 @@ export class HardenedLRUCache<K, V> {
       return undefined;
     }
 
-    // Lazy TTL Expiry validation
     if (Date.now() > node.expiresAt) {
       this.removeNode(node);
       this.lookup.delete(key);
@@ -1700,7 +1630,6 @@ export class HardenedLRUCache<K, V> {
       return undefined;
     }
 
-    // Move to head (MRU)
     this.moveToHead(node);
     this.stats.hits++;
     return node.value;
@@ -1717,7 +1646,6 @@ export class HardenedLRUCache<K, V> {
       return;
     }
 
-    // Eviction if over capacity
     if (this.lookup.size >= this.capacity) {
       const lruNode = this.tail.prev!;
       if (lruNode !== this.head) {
@@ -1727,7 +1655,6 @@ export class HardenedLRUCache<K, V> {
       }
     }
 
-    // Insert new node at head
     const newNode: CacheNode<K, V> = {
       key,
       value,
@@ -1770,7 +1697,7 @@ export class HardenedLRUCache<K, V> {
     keywords: ['rate', 'limiter', 'token bucket', 'throttle', 'leaky', 'sliding window'],
     easy: {
       title: 'Simple Counter-Based Rate Limiter',
-      explanation: 'Keeps an array of request timestamps per client IP. On each call, filters out timestamps older than the time window. If the remaining count exceeds the maximum limit, the request is rejected.',
+      explanation: 'Keeps an array of request timestamps per client IP. Filters out timestamps older than the time window. If the remaining count exceeds the limit, the request is rejected.',
       complexity: 'Time: O(N) per request · Space: O(requests)',
       code: `/**
  * Easy Logic: Timestamp Array Rate Limiter
@@ -1792,7 +1719,6 @@ export class SimpleRateLimiter {
     const now = Date.now();
     const timestamps = this.requests.get(clientId) || [];
 
-    // Filter out expired timestamps older than the window
     const validTimestamps = timestamps.filter(t => now - t < this.windowMs);
 
     if (validTimestamps.length >= this.maxRequests) {
@@ -1806,11 +1732,11 @@ export class SimpleRateLimiter {
 }`
     },
     hard: {
-      title: 'Hardened Token Bucket Rate Limiter with Continuous Refill & Race Protection',
+      title: 'Hardened Token Bucket Rate Limiter with Continuous Refill',
       explanation: 'Production Token Bucket algorithm with fractional continuous token replenishment. Avoids timer drift and O(N) memory leaks. Computes exact X-RateLimit headers (Limit, Remaining, Reset) and Retry-After penalty wait seconds.',
       complexity: 'Time: O(1) guaranteed · Space: O(1) per client',
       code: `/**
- * Hard Logic: Token Bucket Rate Limiter with Sub-millisecond Continuous Refill
+ * Hard Logic: Token Bucket Rate Limiter with Continuous Refill
  * - Zero background timers (memory leak proof)
  * - Fractional token accumulation with burst capacity
  * - HTTP standard header calculations (Remaining, Reset, Retry-After)
@@ -1849,7 +1775,6 @@ export class ProductionTokenBucketLimiter {
       bucket = { tokens: this.capacity, lastRefillTimestamp: now };
       this.buckets.set(clientId, bucket);
     } else {
-      // Continuous token replenishment based on elapsed delta
       const elapsedSeconds = (now - bucket.lastRefillTimestamp) / 1000;
       bucket.tokens = Math.min(
         this.capacity,
@@ -1871,7 +1796,6 @@ export class ProductionTokenBucketLimiter {
       };
     }
 
-    // Rate Limit Triggered!
     const tokensNeeded = cost - bucket.tokens;
     const retryAfterSeconds = Math.ceil(tokensNeeded / this.refillRatePerSecond);
 
@@ -1881,15 +1805,6 @@ export class ProductionTokenBucketLimiter {
       retryAfterSeconds,
       resetTimestampMs
     };
-  }
-
-  public purgeInactiveClients(maxIdleMs: number = 300_000): void {
-    const cutoff = Date.now() - maxIdleMs;
-    for (const [clientId, bucket] of this.buckets.entries()) {
-      if (bucket.lastRefillTimestamp < cutoff && bucket.tokens >= this.capacity) {
-        this.buckets.delete(clientId);
-      }
-    }
   }
 }`
     }
@@ -1926,14 +1841,14 @@ export function simpleAuthMiddleware(req: Request, res: Response, next: NextFunc
     return res.status(403).json({ error: "Invalid token payload" });
   }
 
-  // Attach basic mock user context
+  // Attach basic user context
   (req as any).user = { id: "user_123", role: "member" };
   return next();
 }`
     },
     hard: {
       title: 'Crypto-Hardened JWT & Timing-Safe Token Validator',
-      explanation: 'Production HMAC-SHA256 signature verification with constant-time buffer comparison (`crypto.timingSafeEqual`) to prevent timing attack vulnerabilities. Features token expiration with clock skew tolerance and revocation blacklist support.',
+      explanation: 'Production HMAC-SHA256 signature verification with constant-time buffer comparison (crypto.timingSafeEqual) to prevent timing attacks. Features token expiration leeway and revocation blacklist checks.',
       complexity: 'Time: O(1) constant time · Space: O(1)',
       code: `/**
  * Hard Logic: Timing-Safe Cryptographic JWT Token Validator
@@ -1948,7 +1863,6 @@ interface DecodedTokenPayload {
   sub: string;
   role: string;
   exp: number;
-  nbf?: number;
   jti: string;
 }
 
@@ -1974,7 +1888,7 @@ export function hardenedAuthGuard(jwtSecret: string) {
 
       const [headerB64, payloadB64, signatureB64] = segments;
 
-      // 1. Verify HMAC Signature with Constant-Time Equality
+      // Safe HMAC string concatenation
       const signingInput = headerB64 + '.' + payloadB64;
       const expectedSignature = crypto
         .createHmac('sha256', jwtSecret)
@@ -1988,18 +1902,16 @@ export function hardenedAuthGuard(jwtSecret: string) {
         return res.status(401).json({ error: "INVALID_SIGNATURE", message: "Token cryptographic signature failed" });
       }
 
-      // 2. Decode & Validate Claims
       const payloadJson = Buffer.from(payloadB64, 'base64url').toString('utf-8');
       const claims: DecodedTokenPayload = JSON.parse(payloadJson);
 
       const nowSeconds = Math.floor(Date.now() / 1000);
-      const clockSkewLeeway = 60; // 60 seconds tolerance
+      const clockSkewLeeway = 60;
 
       if (claims.exp && (nowSeconds - clockSkewLeeway) > claims.exp) {
         return res.status(401).json({ error: "TOKEN_EXPIRED", message: "Token has expired" });
       }
 
-      // 3. Blacklist Revocation Check
       if (claims.jti && revokedTokenBlacklist.has(claims.jti)) {
         return res.status(401).json({ error: "TOKEN_REVOKED", message: "Token session has been invalidated" });
       }
@@ -2010,112 +1922,6 @@ export function hardenedAuthGuard(jwtSecret: string) {
       return res.status(401).json({ error: "AUTH_EXCEPTION", message: "Failed to authenticate request" });
     }
   };
-}`
-    }
-  },
-
-  async_retry: {
-    name: 'Async Retry with Exponential Backoff',
-    keywords: ['retry', 'backoff', 'exponential', 'jitter', 'async retry'],
-    easy: {
-      title: 'Basic Loop-Based Retry with Fixed Delay',
-      explanation: 'Uses a simple for-loop with a try/catch block. If the asynchronous operation fails, it sleeps for a fixed duration and tries again up to the max attempts count.',
-      complexity: 'Time: O(attempts) · Space: O(1)',
-      code: `/**
- * Easy Logic: Fixed Delay Async Retry
- * - Standard for-loop with sleep
- * - Readable and easy to follow
- */
-export async function simpleRetry<T>(
-  fn: () => Promise<T>,
-  retries: number = 3,
-  delayMs: number = 1000
-): Promise<T> {
-  let lastError: unknown;
-
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastError = err;
-      if (attempt < retries) {
-        await new Promise(res => setTimeout(res, delayMs));
-      }
-    }
-  }
-
-  throw lastError;
-}`
-    },
-    hard: {
-      title: 'Full-Jitter Exponential Backoff with AbortSignal & Predicate Filters',
-      explanation: 'AWS Full-Jitter algorithm preventing thundering-herd stampedes. Supports AbortSignal for user cancellations, custom retryable error filters (e.g. only retry on 503/504), max delay ceiling, and per-attempt telemetry.',
-      complexity: 'Time: O(log delay) bounded · Space: O(1)',
-      code: `/**
- * Hard Logic: Production Full-Jitter Exponential Backoff Engine
- * - Prevents thundering-herd stampedes via randomized AWS Full Jitter
- * - Supports cancellation via AbortSignal
- * - Configurable retryable error predicates & ceiling delays
- */
-export interface RetryOptions {
-  maxRetries?: number;
-  initialDelayMs?: number;
-  maxDelayMs?: number;
-  backoffMultiplier?: number;
-  signal?: AbortSignal;
-  shouldRetry?: (error: unknown, attempt: number) => boolean;
-  onRetry?: (error: unknown, attempt: number, nextDelayMs: number) => void;
-}
-
-export async function robustRetry<T>(
-  operation: (attempt: number) => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
-  const {
-    maxRetries = 4,
-    initialDelayMs = 250,
-    maxDelayMs = 5000,
-    backoffMultiplier = 2,
-    signal,
-    shouldRetry = () => true,
-    onRetry = () => {}
-  } = options;
-
-  let attempt = 0;
-
-  while (true) {
-    attempt++;
-    if (signal?.aborted) {
-      throw new DOMException("Operation aborted by signal", "AbortError");
-    }
-
-    try {
-      return await operation(attempt);
-    } catch (error) {
-      if (attempt >= maxRetries || !shouldRetry(error, attempt)) {
-        throw error;
-      }
-
-      // AWS Full Jitter Algorithm: sleep = rand(0, min(maxDelay, initial * 2^attempt))
-      const calculatedMax = Math.min(
-        maxDelayMs,
-        initialDelayMs * Math.pow(backoffMultiplier, attempt - 1)
-      );
-      const jitterDelay = Math.floor(Math.random() * calculatedMax);
-
-      onRetry(error, attempt, jitterDelay);
-
-      // Await sleep with AbortSignal cancellation support
-      await new Promise<void>((resolve, reject) => {
-        if (signal?.aborted) return reject(new DOMException("Aborted", "AbortError"));
-        const timer = setTimeout(resolve, jitterDelay);
-        signal?.addEventListener('abort', () => {
-          clearTimeout(timer);
-          reject(new DOMException("Aborted", "AbortError"));
-        }, { once: true });
-      });
-    }
-  }
 }`
     }
   },
@@ -2167,13 +1973,13 @@ export class SimpleBST<T> {
 }`
     },
     hard: {
-      title: 'Guaranteed O(log N) Self-Balancing AVL Tree with Tree Rotations',
-      explanation: 'Production AVL Tree maintaining strict height balancing factor (|balance| <= 1). Automatically executes Left and Right tree rotations upon insertion, ensuring worst-case O(log N) search and preventing degradation to linked lists.',
+      title: 'Guaranteed O(log N) Self-Balancing AVL Tree with Rotations',
+      explanation: 'Production AVL Tree maintaining strict height balancing factor (|balance| <= 1). Automatically executes Left and Right tree rotations upon insertion, ensuring worst-case O(log N) search.',
       complexity: 'Time: O(log N) strict guaranteed · Space: O(N) with height metadata',
       code: `/**
  * Hard Logic: Self-Balancing AVL Tree with Tree Rotations
- * - Height invariant preservation (Balance Factor ∈ {-1, 0, 1})
- * - Automatic Left-Left, Left-Right, Right-Right, Right-Left rotations
+ * - Height invariant preservation (Balance Factor in {-1, 0, 1})
+ * - Automatic Left and Right tree rotations
  * - Strict O(log N) worst-case search guarantee
  */
 class AVLNode<T> {
@@ -2181,10 +1987,7 @@ class AVLNode<T> {
   height: number = 1;
   left: AVLNode<T> | null = null;
   right: AVLNode<T> | null = null;
-
-  constructor(value: T) {
-    this.value = value;
-  }
+  constructor(value: T) { this.value = value; }
 }
 
 export class ProductionAVLTree<T> {
@@ -2202,28 +2005,18 @@ export class ProductionAVLTree<T> {
     } else if (value > node.value) {
       node.right = this.insertInternal(node.right, value);
     } else {
-      return node; // Duplicate values ignored
+      return node;
     }
 
-    // Update height
     node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
     const balance = this.getBalance(node);
 
-    // Rebalance via Rotations
-    // Case 1: Left-Left
-    if (balance > 1 && value < node.left!.value) {
-      return this.rotateRight(node);
-    }
-    // Case 2: Right-Right
-    if (balance < -1 && value > node.right!.value) {
-      return this.rotateLeft(node);
-    }
-    // Case 3: Left-Right
+    if (balance > 1 && value < node.left!.value) return this.rotateRight(node);
+    if (balance < -1 && value > node.right!.value) return this.rotateLeft(node);
     if (balance > 1 && value > node.left!.value) {
       node.left = this.rotateLeft(node.left!);
       return this.rotateRight(node);
     }
-    // Case 4: Right-Left
     if (balance < -1 && value < node.right!.value) {
       node.right = this.rotateRight(node.right!);
       return this.rotateLeft(node);
@@ -2278,18 +2071,17 @@ function synthesizeGenericCode(prompt, language) {
   const cleanPrompt = prompt.trim() || 'Data Processing Pipeline';
   
   const easyCode = `/**
- * Easy Logic: ${cleanPrompt} (${language})
+ * Easy Logic: ` + cleanPrompt + ` (` + language + `)
  * - Straightforward procedural flow
  * - Standard syntax with low cognitive load
  */
 export function executeSimpleProcess(items: any[]): any[] {
-  console.log("Starting simple process for:", "${cleanPrompt}");
+  console.log("Starting simple process for: ` + cleanPrompt + `");
   const results = [];
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (item !== null && item !== undefined) {
-      // Basic transform
       results.push({
         id: i + 1,
         processed: true,
@@ -2302,7 +2094,7 @@ export function executeSimpleProcess(items: any[]): any[] {
 }`;
 
   const hardCode = `/**
- * Hard Logic: ${cleanPrompt} (${language})
+ * Hard Logic: ` + cleanPrompt + ` (` + language + `)
  * - Production-hardened with defensive input boundaries
  * - Concurrency & memory leak protection
  * - Strict typing and structured error handling
@@ -2378,7 +2170,6 @@ export async function executeHardenedPipeline<T, R>(
   };
 }
 
-// Generate with templates or fallback
 function generateCodeWithTemplates(prompt, language) {
   const lowerPrompt = prompt.toLowerCase();
   
@@ -2397,21 +2188,20 @@ function generateCodeWithTemplates(prompt, language) {
   return synthesizeGenericCode(prompt, language);
 }
 
-// Call Google Gemini API for custom dual-logic generation
 async function generateCodeWithGemini(prompt, language, apiKey, model) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const systemInstruction = `You are an elite Senior Staff Engineer, Algorithmist, and Systems Architect.
+  const systemInstruction = `You are an elite Senior Staff Engineer and Systems Architect.
 Generate TWO distinct, complete, high-quality implementations of the requested concept in ${language}:
-1. "easy": Beginner-friendly, straightforward procedural logic, clean, standard library syntax, simple control flow, easily readable.
+1. "easy": Beginner-friendly, straightforward procedural logic, clean, standard library syntax, simple control flow.
 2. "hard": Advanced, high-performance, algorithmic depth, production-hardened, handling complex edge cases (concurrency safety, memory safety, defensive bounds, optimal time/space complexity).
 
-You MUST return a JSON object conforming strictly to this JSON schema:
+Output valid, parseable JSON conforming strictly to this schema:
 {
   "topic": "${prompt}",
   "easy": {
     "title": "Straightforward Solution Title",
-    "explanation": "Clear explanation of easy approach, standard flow, why it is easy to understand...",
+    "explanation": "Clear explanation of easy approach, why it is easy to understand...",
     "complexity": "Time: O(N) · Space: O(1)",
     "code": "// complete runnable code with comments..."
   },
@@ -2421,8 +2211,7 @@ You MUST return a JSON object conforming strictly to this JSON schema:
     "complexity": "Time: O(1) amortized · Space: O(N)",
     "code": "// complete runnable production code with comments..."
   }
-}
-Return ONLY valid JSON.`;
+}`;
 
   const payload = {
     contents: [
@@ -2470,7 +2259,7 @@ Return ONLY valid JSON.`;
   return JSON.parse(cleanJson);
 }
 
-// Main Code Generation Execution Controller
+// Main Generator Execution Controller
 async function runCodeGeneration() {
   const promptInput = document.getElementById('gen-prompt-input');
   const prompt = promptInput?.value.trim() || 'LRU Cache with TTL';
@@ -2494,12 +2283,12 @@ async function runCodeGeneration() {
         result = await generateCodeWithGemini(prompt, language, state.apiKey, state.selectedModel);
       } catch (geminiErr) {
         console.warn('Gemini generation failed, falling back to built-in templates:', geminiErr);
-        showToast(`AI generation fell back to built-in template engine (${geminiErr.message})`, 'warning');
+        showToast(`Using built-in template engine (${geminiErr.message})`, 'info');
         result = generateCodeWithTemplates(prompt, language);
       }
     } else {
       showToast('Generating dual-logic implementations (Built-in Engine)...', 'info');
-      await new Promise(r => setTimeout(r, 450)); // smooth visual cadence
+      await new Promise(r => setTimeout(r, 350));
       result = generateCodeWithTemplates(prompt, language);
     }
 
@@ -2510,44 +2299,22 @@ async function runCodeGeneration() {
       prompt: prompt
     };
 
-    // Render results into UI
     renderGeneratedResults(result, prompt, language);
     showToast('Generated Easy & Hard Logic implementations successfully!', 'success');
 
-    // Auto-Review feature
     if (autoReview) {
       setTimeout(() => {
         autoReviewGeneratedCode('hard');
-      }, 700);
+      }, 600);
     }
 
   } catch (err) {
     console.error('Code generation failed:', err);
-    showToast(`Generation error: ${err.message}`, 'danger');
+    showToast(`Generation notice: ${err.message}`, 'danger');
   } finally {
     if (btn) btn.disabled = false;
     if (btnText) btnText.textContent = 'Generate Code';
     state.isGenerating = false;
-  }
-}
-
-function renderGeneratedResults(result, prompt, language) {
-  // Update Easy Logic Card
-  document.getElementById('easy-logic-title').textContent = result.easy.title || 'Easy Logic Solution';
-  document.getElementById('easy-logic-complexity').textContent = result.easy.complexity || 'Time: O(N) · Space: O(1)';
-  document.getElementById('easy-logic-explanation').textContent = result.easy.explanation || '';
-  document.getElementById('easy-logic-code').textContent = result.easy.code || '';
-
-  // Update Hard Logic Card
-  document.getElementById('hard-logic-title').textContent = result.hard.title || 'Hard Logic Solution';
-  document.getElementById('hard-logic-complexity').textContent = result.hard.complexity || 'Time: O(1) · Space: O(N)';
-  document.getElementById('hard-logic-explanation').textContent = result.hard.explanation || '';
-  document.getElementById('hard-logic-code').textContent = result.hard.code || '';
-
-  // Update topic badge
-  const badge = document.getElementById('gen-active-topic-badge');
-  if (badge) {
-    badge.textContent = `Active: ${prompt} · Language: ${language.toUpperCase()}`;
   }
 }
 
@@ -2574,7 +2341,7 @@ async function runQuickGeneration(difficulty) {
         result = generateCodeWithTemplates(prompt, language);
       }
     } else {
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 250));
       result = generateCodeWithTemplates(prompt, language);
     }
 
@@ -2598,6 +2365,33 @@ async function runQuickGeneration(difficulty) {
   }
 }
 
+function renderGeneratedResults(result, prompt, language) {
+  const easyTitle = document.getElementById('easy-logic-title');
+  const easyComp = document.getElementById('easy-logic-complexity');
+  const easyExp = document.getElementById('easy-logic-explanation');
+  const easyCode = document.getElementById('easy-logic-code');
+
+  if (easyTitle) easyTitle.textContent = result.easy.title || 'Easy Logic Solution';
+  if (easyComp) easyComp.textContent = result.easy.complexity || 'Time: O(N) · Space: O(1)';
+  if (easyExp) easyExp.textContent = result.easy.explanation || '';
+  if (easyCode) easyCode.textContent = result.easy.code || '';
+
+  const hardTitle = document.getElementById('hard-logic-title');
+  const hardComp = document.getElementById('hard-logic-complexity');
+  const hardExp = document.getElementById('hard-logic-explanation');
+  const hardCode = document.getElementById('hard-logic-code');
+
+  if (hardTitle) hardTitle.textContent = result.hard.title || 'Hard Logic Solution';
+  if (hardComp) hardComp.textContent = result.hard.complexity || 'Time: O(1) · Space: O(N)';
+  if (hardExp) hardExp.textContent = result.hard.explanation || '';
+  if (hardCode) hardCode.textContent = result.hard.code || '';
+
+  const badge = document.getElementById('gen-active-topic-badge');
+  if (badge) {
+    badge.textContent = `Active: ${prompt} · Language: ${language.toUpperCase()}`;
+  }
+}
+
 // Global actions for generated code
 window.autoReviewGeneratedCode = function(difficulty) {
   const item = state.generatedCode[difficulty];
@@ -2612,14 +2406,12 @@ window.autoReviewGeneratedCode = function(difficulty) {
     textarea.dispatchEvent(new Event('input'));
   }
 
-  // Sync language selector
   if (state.generatedCode.language) {
     state.currentLanguage = state.generatedCode.language;
     const langSelect = document.getElementById('language-selector');
     if (langSelect) langSelect.value = state.generatedCode.language;
   }
 
-  // Switch to review tab and trigger instant analysis
   switchTab('review');
   showToast(`Auto-reviewing generated ${difficulty.toUpperCase()} logic...`, 'info');
   runAnalysis();
@@ -2670,7 +2462,6 @@ window.setGeneratorViewMode = function(mode) {
   const cardHard = document.getElementById('card-hard-logic');
   const grid = document.getElementById('gen-results-grid');
 
-  // Reset classes
   [btnSplit, btnEasy, btnHard].forEach(b => {
     b?.classList.remove('bg-surface-container-high', 'text-primary', 'font-semibold');
     b?.classList.add('text-on-surface-variant');
@@ -2699,3 +2490,50 @@ window.setGeneratorViewMode = function(mode) {
   }
 };
 
+// =============================================================
+// Toast Notifications & Helpers
+// =============================================================
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  const typeStyles = {
+    info: 'border-info/40 text-info',
+    success: 'border-secondary/40 text-secondary',
+    warning: 'border-warning/40 text-warning',
+    danger: 'border-danger/40 text-danger'
+  }[type] || 'border-border-color text-on-surface';
+
+  const icons = {
+    info: 'info',
+    success: 'check_circle',
+    warning: 'warning',
+    danger: 'error'
+  }[type] || 'notifications';
+
+  toast.className = `toast ${typeStyles}`;
+  toast.innerHTML = `
+    <span class="material-symbols-outlined text-[18px] shrink-0">${icons}</span>
+    <span class="flex-1 text-xs text-on-surface font-medium">${escapeHtml(message)}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(8px)';
+    toast.style.transition = 'all 0.2s ease-out';
+    setTimeout(() => toast.remove(), 200);
+  }, 3500);
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
